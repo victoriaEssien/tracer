@@ -8,13 +8,18 @@ import { getFeed } from "@/server/opportunities";
 export const metadata = { title: "Feed · Tracer" };
 export const dynamic = "force-dynamic";
 
-export default async function FeedPage() {
+export default async function FeedPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ discovering?: string }>;
+}) {
   const userId = await currentUserId();
   if (!userId) redirect("/");
 
   const profile = await getUserProfile(userId);
   if (!profile?.onboardedAt) redirect("/onboarding");
 
+  const { discovering } = await searchParams;
   const opportunities = await getFeed(userId, { limit: 40 });
 
   const recommended = opportunities.filter((item) => item.verdict === "recommended").length;
@@ -30,7 +35,7 @@ export default async function FeedPage() {
         </p>
       </div>
 
-      <FeedList opportunities={opportunities} />
+      <FeedList opportunities={opportunities} discovering={discovering === "1"} />
     </main>
   );
 }

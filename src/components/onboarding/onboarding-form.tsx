@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ChipPicker } from "@/components/onboarding/chip-picker";
-import { Button, Card, SectionHeading } from "@/components/ui";
+import { Button, Card, SectionHeading, StatusMessage } from "@/components/ui";
 import {
   CONTRIBUTION_TYPES,
   EXPERIENCE_LEVELS,
@@ -53,8 +53,11 @@ export function OnboardingForm({ profile }: { profile: UserProfile | null }) {
     profile?.experienceLevel ?? "intermediate",
   );
 
-  const [status, setStatus] = useState<"idle" | "saving" | "finding">("idle");
+  const [status, setStatus] = useState<"idle" | "saving">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Editing an existing profile should not trigger another search.
+  const firstRun = profile?.onboardedAt == null;
 
   const hasSkills = languages.length + frameworks.length + tools.length > 0;
 
@@ -83,16 +86,18 @@ export function OnboardingForm({ profile }: { profile: UserProfile | null }) {
       return;
     }
 
-    // A first run needs something in the feed to look at, so discovery is
-    // kicked off here rather than waiting for a scheduler.
-    setStatus("finding");
-    await fetch("/api/jobs/discovery", {
+    // A first run needs something in the feed to look at, so discovery starts
+    // here rather than waiting for a scheduler. It is deliberately not awaited:
+    // a run takes a minute or two, and making someone stare at a disabled
+    // button for that long is not a first impression worth having. The feed
+    // picks up the `?discovering=1` flag and reports progress there instead.
+    void fetch("/api/jobs/discovery", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ maxIssues: 30 }),
     }).catch(() => null);
 
-    router.push("/feed");
+    router.push(firstRun ? "/feed?discovering=1" : "/feed");
     router.refresh();
   }
 
@@ -231,24 +236,14 @@ export function OnboardingForm({ profile }: { profile: UserProfile | null }) {
           disabled={!hasSkills || status !== "idle"}
           className="px-4 py-2"
         >
-          {status === "idle"
-            ? "Save and find opportunities"
-            : status === "saving"
-              ? "Saving…"
-              : "Looking for issues…"}
+          {status === "saving" ? "Saving…" : firstRun ? "Save and find opportunities" : "Save changes"}
         </Button>
 
         {!hasSkills ? (
-          <span className="text-xs text-ink-faint">Pick at least one thing you know.</span>
+          <StatusMessage>Pick at least one thing you know.</StatusMessage>
         ) : null}
-        {errorMessage ? <span className="text-xs text-bad">{errorMessage}</span> : null}
+        {errorMessage ? <StatusMessage tone="bad">{errorMessage}</StatusMessage> : null}
       </div>
-
-      {status === "finding" ? (
-        <p className="text-xs text-ink-faint">
-          Searching GitHub and scoring what it finds. This takes a few moments on a first run.
-        </p>
-      ) : null}
     </div>
   );
 }
