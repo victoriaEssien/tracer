@@ -8,7 +8,19 @@ import type { ScoreBreakdownEntry } from "@/types";
  * 23), and a score nobody can take apart is not one worth trusting — so every
  * weight, sub-score and reason is on screen rather than in a tooltip.
  */
-export function ScoreBreakdown({ breakdown }: { breakdown: ScoreBreakdownEntry[] }) {
+export function ScoreBreakdown({
+  breakdown,
+  alreadyShown = [],
+}: {
+  breakdown: ScoreBreakdownEntry[];
+  /**
+   * Reasoning the explanation panel above has already given. Repeating it here
+   * makes the page read as if it is padding, and buries the lines that are
+   * only visible in the breakdown.
+   */
+  alreadyShown?: string[];
+}) {
+  const shown = new Set(alreadyShown);
   return (
     <Card className="p-5">
       <SectionHeading hint="weights are published in docs/scoring.md">
@@ -37,12 +49,17 @@ export function ScoreBreakdown({ breakdown }: { breakdown: ScoreBreakdownEntry[]
               <SignalBar value={entry.raw} />
             </div>
 
-            {entry.reasons.length > 0 || entry.concerns.length > 0 ? (
-              <div className="mt-2.5 space-y-1.5">
-                <ReasonList items={entry.reasons} tone="positive" />
-                <ReasonList items={entry.concerns} tone="concern" />
-              </div>
-            ) : null}
+            {(() => {
+              const reasons = entry.reasons.filter((item) => !shown.has(item));
+              const concerns = entry.concerns.filter((item) => !shown.has(item));
+              if (reasons.length === 0 && concerns.length === 0) return null;
+              return (
+                <div className="mt-2.5 space-y-1.5">
+                  <ReasonList items={reasons} tone="positive" />
+                  <ReasonList items={concerns} tone="concern" />
+                </div>
+              );
+            })()}
           </div>
         ))}
       </div>

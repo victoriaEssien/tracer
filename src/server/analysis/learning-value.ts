@@ -71,9 +71,9 @@ export function analyzeLearningValue(input: {
     score += 0.05;
   }
 
-  if (goalMatches.length === 0 && practiceGoals.length === 0) {
-    concerns.push("This does not overlap with the technologies you said you want to learn");
-  }
+  // No concern is raised for the absence of a learning match. It is not a
+  // reason to be careful about a contribution, and listing it under "things to
+  // know" crowds out the warnings that are.
 
   // Learning in a project that never merges outside work is not learning much.
   if (repo.activity.externalPullRequestsMergedLast90Days === 0 && goalMatches.length > 0) {
