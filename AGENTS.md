@@ -42,20 +42,27 @@ If it has already happened, `rm -rf .next` and restart. Check that port 3000 is 
 
 ## Database
 
-`pnpm db:push` is a dev convenience and needs an interactive terminal for its confirmation prompt. Production schema changes go through a committed migration:
+`pnpm db:push` is a dev convenience and needs an interactive terminal for its confirmation prompt. It only ever touches the dev branch.
+
+Production schema changes go through a committed migration, and the production deploy applies it:
 
 ```bash
-pnpm db:generate          # after editing schema.ts, commit the result
-pnpm db:migrate:prod      # applies committed migrations to the production branch
+pnpm db:generate    # after editing schema.ts
+git add drizzle/    # the migration is part of the change, not a side effect
 ```
 
-Dev and production are separate Neon branches, and `.env.local` holds both: `DATABASE_URL` for dev, `PROD_DATABASE_URL` for production.
+`pnpm build` ends with `node scripts/migrate.mjs`, which applies any migration production has not seen yet. It runs only when `VERCEL_ENV` is `production`; a preview deployment or a local build prints why it is skipping and exits. If a migration fails, the build fails and nothing is promoted.
 
-Only `migrate` ever runs against production, through `drizzle.config.prod.ts`. Never point `push` at it: push reshapes the database to match the schema, which includes dropping columns it does not recognise.
+`pnpm db:migrate:prod` does the same thing from a terminal, for when a database needs fixing without a deploy.
 
-The separate config exists because `drizzle.config.ts` loads `.env.local` with `override: true`, so a `DATABASE_URL` set on the command line is silently replaced by the dev one. Such a run reports success while production stays untouched, which is worse than a run that fails.
+Dev and production are separate Neon branches. On Vercel, `DATABASE_URL` is production. Locally it is dev, and production lives in `PROD_DATABASE_URL`, which nothing reads at runtime. Never point `push` at production: it reshapes the database to match the schema, dropping columns it does not recognise.
 
-A new environment starts with no tables at all, and every query fails with `42P01`. That is a missing migration, not a broken connection string.
+Two things the deploy step does not do, both of which shape how a migration should be written:
+
+- **The schema changes before the new code is serving.** The build finishes, migrations run, then the deployment is promoted. For that window the old code runs against the new schema, so migrations must be additive. Drop a column in a later deploy, once nothing reads it.
+- **A rollback does not roll the schema back.** Redeploying an older commit applies nothing and leaves the schema where it is.
+
+A database with no tables fails every query with `42P01`. That is a missing migration, not a broken connection string.
 
 ## Package manager
 
