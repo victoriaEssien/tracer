@@ -1,5 +1,6 @@
 import { AlertTriangle, Check } from "lucide-react";
 
+import { Identicon } from "@/components/marketing/identicon";
 import { Chip } from "@/components/ui";
 
 /**
@@ -16,7 +17,7 @@ export function ClaimedProof() {
       <p className="text-xs text-ink-faint">Comment 7 of 31</p>
       <div className="mt-3 space-y-3">
         <div className="flex gap-2.5">
-          <span className="mt-0.5 h-6 w-6 shrink-0 rounded-full bg-raised" aria-hidden />
+          <Identicon seed="contributor" size={26} />
           <div>
             <p className="font-mono text-xs text-ink-faint">@contributor</p>
             <p className="mt-0.5 text-sm text-ink-soft">

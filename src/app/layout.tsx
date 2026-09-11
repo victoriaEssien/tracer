@@ -36,9 +36,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Browser extensions inject attributes into <html> and <body> before React
+  // hydrates (password managers, grammar checkers, colour pickers), which React
+  // then reports as a mismatch it cannot patch. The suppression applies to these
+  // two elements only, and to nothing inside them.
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
-      <body className="flex min-h-screen flex-col font-sans antialiased">
+    <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+      <body
+        className="flex min-h-screen flex-col font-sans antialiased"
+        suppressHydrationWarning
+      >
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-ink focus:px-3 focus:py-2 focus:text-sm focus:text-canvas"
