@@ -17,7 +17,7 @@ import type { ContributionType, Difficulty, ScoreDimension } from "@/types";
 import { normalizeWeights, type Weights } from "./score";
 
 export interface LearningEvent {
-  type: "saved" | "unsaved" | "dismissed" | "viewed" | "opened";
+  type: "saved" | "unsaved" | "dismissed" | "undismissed" | "viewed" | "opened";
   technologies: string[];
   contributionTypes: ContributionType[];
   difficulty: Difficulty | null;

@@ -324,6 +324,10 @@ export interface OpportunitySummary {
   topReasons: string[];
   topConcerns: string[];
   saved: boolean;
+  /** When the issue was opened, so a three-year-old issue looks like one. */
+  openedAt: string;
+  /** Last activity on the issue itself, not on our analysis of it. */
+  issueUpdatedAt: string;
   analyzedAt: string;
 }
 

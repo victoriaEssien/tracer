@@ -5,7 +5,7 @@
  * route handlers and jobs never assemble SQL themselves.
  */
 
-import { and, desc, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNotNull, isNull, lt, or, sql } from "drizzle-orm";
 
 import type {
   AiInsights,
@@ -323,6 +323,8 @@ export interface FeedFilters {
   freshSince?: Date;
   /** Restrict to a difficulty the user asked for. */
   difficulty?: string;
+  /** Return what the user dismissed instead of what they have not. */
+  onlyDismissed?: boolean;
 }
 
 export async function listFeed(userId: string, filters: FeedFilters = {}): Promise<FeedRow[]> {
@@ -361,7 +363,14 @@ export async function listFeed(userId: string, filters: FeedFilters = {}): Promi
         eq(dismissedOpportunities.userId, userId),
       ),
     )
-    .where(and(...conditions, isNull(dismissedOpportunities.issueId)))
+    .where(
+      and(
+        ...conditions,
+        filters.onlyDismissed
+          ? isNotNull(dismissedOpportunities.issueId)
+          : isNull(dismissedOpportunities.issueId),
+      ),
+    )
     .orderBy(desc(analyses.overallScore))
     .limit(filters.limit ?? 25)
     .offset(filters.offset ?? 0);
@@ -508,6 +517,17 @@ export async function dismissOpportunity(userId: string, issueId: string): Promi
     .onConflictDoNothing();
 }
 
+export async function undismissOpportunity(userId: string, issueId: string): Promise<void> {
+  await db
+    .delete(dismissedOpportunities)
+    .where(
+      and(
+        eq(dismissedOpportunities.userId, userId),
+        eq(dismissedOpportunities.issueId, issueId),
+      ),
+    );
+}
+
 /* -------------------------------------------------------------------------- */
 /* Events                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -515,7 +535,7 @@ export async function dismissOpportunity(userId: string, issueId: string): Promi
 export async function recordEvent(input: {
   userId: string;
   issueId: string | null;
-  type: "saved" | "unsaved" | "dismissed" | "viewed" | "opened";
+  type: "saved" | "unsaved" | "dismissed" | "undismissed" | "viewed" | "opened";
   technologies?: string[];
   contributionTypes?: ContributionType[];
   difficulty?: Difficulty | null;

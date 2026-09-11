@@ -1,15 +1,21 @@
 /**
  * GET /api/opportunities — the ranked feed.
  *
- * Query parameters: `limit`, `offset`, `minScore`, `difficulty`.
+ * Query parameters: `limit`, `offset`, `minScore`, `difficulty`, and
+ * `dismissed=1` to list what the user dismissed instead.
  */
 
 import { intParam, json, withUser } from "@/lib/api";
-import { getFeed } from "@/server/opportunities";
+import { getDismissed, getFeed } from "@/server/opportunities";
 
 export async function GET(request: Request) {
   return withUser(async (userId) => {
     const url = new URL(request.url);
+
+    if (url.searchParams.get("dismissed") === "1") {
+      const dismissed = await getDismissed(userId);
+      return json({ opportunities: dismissed, count: dismissed.length });
+    }
 
     const opportunities = await getFeed(userId, {
       limit: intParam(url, "limit", 25, 100),

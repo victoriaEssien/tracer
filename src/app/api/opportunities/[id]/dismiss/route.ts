@@ -6,12 +6,21 @@
  */
 
 import { json, withUser } from "@/lib/api";
-import { dismiss } from "@/server/opportunities";
+import { dismiss, undismiss } from "@/server/opportunities";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   return withUser(async (userId) => {
     const { id } = await params;
     await dismiss(userId, id);
     return json({ dismissed: true });
+  });
+}
+
+/** Undo. A dismissal is a judgement, not a deletion, so it has to be reversible. */
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  return withUser(async (userId) => {
+    const { id } = await params;
+    await undismiss(userId, id);
+    return json({ dismissed: false });
   });
 }

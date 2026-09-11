@@ -105,6 +105,8 @@ function toSummary(row: queries.FeedRow): OpportunitySummary {
     topReasons: reasons.length > 0 ? reasons : analysis.positives.slice(0, 3),
     topConcerns: concerns.length > 0 ? concerns : analysis.concerns.slice(0, 2),
     saved: row.savedAt !== null,
+    openedAt: (issue.createdAt ?? analysis.createdAt).toISOString(),
+    issueUpdatedAt: (issue.updatedAt ?? analysis.createdAt).toISOString(),
     analyzedAt: analysis.createdAt.toISOString(),
   };
 }
@@ -392,6 +394,16 @@ export async function save(userId: string, issueId: string): Promise<void> {
 export async function unsave(userId: string, issueId: string): Promise<void> {
   await queries.unsaveOpportunity(userId, issueId);
   await queries.recordEvent({ userId, issueId, type: "unsaved" });
+}
+
+export async function undismiss(userId: string, issueId: string): Promise<void> {
+  await queries.undismissOpportunity(userId, issueId);
+  await queries.recordEvent({ userId, issueId, type: "undismissed" });
+}
+
+export async function getDismissed(userId: string): Promise<OpportunitySummary[]> {
+  const rows = await queries.listFeed(userId, { limit: 50, onlyDismissed: true });
+  return rows.map(toSummary);
 }
 
 export async function dismiss(userId: string, issueId: string): Promise<void> {

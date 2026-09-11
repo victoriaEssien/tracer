@@ -326,7 +326,9 @@ export const userEvents = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     issueId: text("issue_id").references(() => issues.id, { onDelete: "set null" }),
-    type: text("type").$type<"saved" | "unsaved" | "dismissed" | "viewed" | "opened">().notNull(),
+    type: text("type")
+      .$type<"saved" | "unsaved" | "dismissed" | "undismissed" | "viewed" | "opened">()
+      .notNull(),
     technologies: jsonb("technologies").$type<string[]>().notNull().default([]),
     contributionTypes: jsonb("contribution_types").$type<ContributionType[]>().notNull().default([]),
     difficulty: text("difficulty").$type<Difficulty>(),
