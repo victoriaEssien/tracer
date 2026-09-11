@@ -9,7 +9,7 @@
  * them, because repository collection is the expensive half.
  */
 
-import { normalizeTechnology } from "@/config/skills";
+import { languageCandidates } from "@/config/skills";
 import {
   buildDiscoveryQueries,
   collectIssue,
@@ -59,19 +59,15 @@ export async function runDiscovery(
   const client = await githubForUser(userId);
 
   // Languages the user knows or wants to learn are the search axis; interests
-  // are too vague to search on and are scored later instead.
-  const languages = [...profile.experienced, ...profile.learning]
-    .map(normalizeTechnology)
-    .filter((value, index, all) => all.indexOf(value) === index)
-    .slice(0, 4);
+  // are too vague to search on and are scored later instead. Frameworks are
+  // dropped rather than sent as `language:`, which GitHub would ignore.
+  const languages = languageCandidates([...profile.experienced, ...profile.learning]).slice(0, 4);
 
-  const searches = buildDiscoveryQueries({
-    languages,
-    minStars: options.minStars ?? 50,
-  });
+  const searches = buildDiscoveryQueries({ languages });
 
   const maxIssues = options.maxIssues ?? 40;
   const maxRepositories = options.maxRepositories ?? 15;
+  const minStars = options.minStars ?? 50;
 
   const candidates: { owner: string; repo: string; number: number }[] = [];
 
@@ -101,7 +97,7 @@ export async function runDiscovery(
       if (repositoryIds.size >= maxRepositories) break;
 
       const [owner, repo] = fullName.split("/");
-      const repositoryId = await ensureRepository(client, owner, repo);
+      const repositoryId = await ensureRepository(client, owner, repo, minStars);
       if (!repositoryId) continue;
 
       repositoryIds.set(fullName, repositoryId);
@@ -131,21 +127,29 @@ export async function runDiscovery(
   return result;
 }
 
+/**
+ * Collects a repository, or returns the stored copy. Null means the repository
+ * is not worth spending the rest of the run on.
+ *
+ * The star floor is applied here rather than in the search, because issue
+ * search has no working way to express it.
+ */
 async function ensureRepository(
   client: GitHubClient,
   owner: string,
   repo: string,
+  minStars: number,
 ): Promise<string | null> {
   const fullName = `${owner}/${repo}`;
   const stored = await queries.findRepositoryByFullName(fullName);
 
   // Repository metadata moves slowly; a day-old copy is good enough.
   if (stored && Date.now() - stored.collectedAt.getTime() < 86_400_000) {
-    return stored.id;
+    return stored.stars >= minStars ? stored.id : null;
   }
 
   const collected = await collectRepository(client, owner, repo);
-  if (!collected || collected.isArchived) return null;
+  if (!collected || collected.isArchived || collected.stars < minStars) return null;
 
   return queries.upsertRepository(collected);
 }

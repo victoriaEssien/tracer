@@ -27,12 +27,16 @@ export interface DiscoveredIssue {
 }
 
 export interface DiscoveryQuery {
-  /** A language as GitHub spells it ("TypeScript"). */
+  /**
+   * A language as GitHub's linguist spells it ("TypeScript").
+   *
+   * It must be a real language. Issue search does not reject an unknown one —
+   * it silently drops the qualifier and returns everything, so `language:React`
+   * reads as "no language filter" rather than as an error.
+   */
   language?: string;
   /** A single label, quoted automatically. */
   label?: string;
-  /** Repositories below this many stars are skipped. */
-  minStars?: number;
   /** Only issues updated within this many days. */
   updatedWithinDays?: number;
   /** Skip issues that already have a crowd on them. */
@@ -59,7 +63,9 @@ export async function searchIssues(
 
   if (query.language) parts.push(`language:${quote(query.language)}`);
   if (query.label) parts.push(`label:${quote(query.label)}`);
-  if (query.minStars) parts.push(`stars:>=${query.minStars}`);
+  // No `stars:` qualifier: it is a repository-search filter, and issue search
+  // matches it as literal text instead, which empties the result set. The star
+  // floor is applied once the repository has been collected.
   if (query.updatedWithinDays) {
     const since = new Date(Date.now() - query.updatedWithinDays * 86_400_000);
     parts.push(`updated:>=${since.toISOString().slice(0, 10)}`);
@@ -97,7 +103,6 @@ export async function searchIssues(
  */
 export function buildDiscoveryQueries(input: {
   languages: string[];
-  minStars?: number;
   updatedWithinDays?: number;
   maxQueries?: number;
 }): DiscoveryQuery[] {
@@ -109,7 +114,6 @@ export function buildDiscoveryQueries(input: {
       queries.push({
         language,
         label,
-        minStars: input.minStars ?? 50,
         updatedWithinDays: input.updatedWithinDays ?? 120,
       });
     }

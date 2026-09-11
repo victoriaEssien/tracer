@@ -325,6 +325,31 @@ export function technologiesFromRepository(input: {
   return [...found];
 }
 
+/**
+ * The subset of a user's skills that can be sent to GitHub as `language:`.
+ *
+ * Issue search silently ignores an unknown language and returns everything, so
+ * `language:React` does not fail — it quietly searches the whole of GitHub.
+ * Anything we know to be a framework, tool or database is therefore dropped
+ * here. A skill we have never heard of is kept: it may well be a language we
+ * simply do not have in the catalog.
+ */
+export function languageCandidates(skills: string[]): string[] {
+  const notLanguages = new Set(
+    [...FRAMEWORKS, ...TOOLS].map((item) => item.toLowerCase()),
+  );
+  const languages = new Set(LANGUAGES.map((item) => item.toLowerCase()));
+
+  const found = new Set<string>();
+  for (const skill of skills) {
+    const canonical = normalizeTechnology(skill);
+    const key = canonical.toLowerCase();
+    if (notLanguages.has(key)) continue;
+    if (languages.has(key) || !INTEREST_ALIASES[key]) found.add(canonical);
+  }
+  return [...found];
+}
+
 /** Pulls domain interests out of repository topics and description. */
 export function interestsFromRepository(input: {
   topics: string[];
