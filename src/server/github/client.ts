@@ -16,8 +16,27 @@ const REST_BASE = "https://api.github.com";
 const GRAPHQL_URL = "https://api.github.com/graphql";
 const USER_AGENT = "tracer (+https://github.com/tracer)";
 
+/**
+ * GitHub meters its endpoints in separate buckets, and they are nothing like
+ * each other in size: core is 5,000 an hour, search is 30 a minute. Tracking
+ * one shared number means a handful of searches convinces the client it has
+ * almost nothing left, and it then refuses core requests it could well afford.
+ */
+type RateLimitResource = "core" | "search" | "graphql";
+
 /** Requests are refused below this to leave room for user-facing traffic. */
-const RESERVED_REQUESTS = 50;
+const RESERVED_REQUESTS: Record<RateLimitResource, number> = {
+  core: 50,
+  graphql: 50,
+  // Reserving 50 of a 30-request bucket would refuse every search ever made.
+  search: 2,
+};
+
+const DEFAULT_LIMITS: Record<RateLimitResource, number> = {
+  core: 5000,
+  graphql: 5000,
+  search: 30,
+};
 
 export class GitHubError extends Error {
   constructor(
@@ -77,15 +96,24 @@ export interface RequestOptions {
 
 export class GitHubClient {
   private readonly token: string | null;
-  private rateLimit: RateLimitState = { limit: 5000, remaining: 5000, resetAt: null };
+  private readonly rateLimits = new Map<RateLimitResource, RateLimitState>();
 
   constructor(options: GitHubClientOptions = {}) {
     this.token = options.token ?? backgroundGithubToken();
   }
 
-  /** What is left of the hourly budget, as of the last response. */
-  getRateLimit(): RateLimitState {
-    return { ...this.rateLimit };
+  /** What is left of a bucket's budget, as of the last response against it. */
+  getRateLimit(resource: RateLimitResource = "core"): RateLimitState {
+    return { ...this.budget(resource) };
+  }
+
+  private budget(resource: RateLimitResource): RateLimitState {
+    let state = this.rateLimits.get(resource);
+    if (!state) {
+      state = { limit: DEFAULT_LIMITS[resource], remaining: DEFAULT_LIMITS[resource], resetAt: null };
+      this.rateLimits.set(resource, state);
+    }
+    return state;
   }
 
   /**
@@ -171,7 +199,7 @@ export class GitHubClient {
     if (cached?.etag) headers["If-None-Match"] = cached.etag;
 
     const response = await this.send(url, { ...init, headers });
-    this.readRateLimit(response);
+    this.readRateLimit(response, url);
 
     if (response.status === 304 && cached) {
       cached.expiresAt = Date.now() + (options.cacheSeconds ?? DEFAULT_TTL_SECONDS) * 1000;
@@ -212,10 +240,10 @@ export class GitHubClient {
     if (response.status === 403 || response.status === 429) {
       const remaining = Number(response.headers.get("x-ratelimit-remaining") ?? "1");
       if (remaining === 0) {
-        this.readRateLimit(response);
+        this.readRateLimit(response, url);
         throw new RateLimitError(
           "GitHub rate limit exhausted",
-          this.rateLimit.resetAt ?? new Date(Date.now() + 60_000),
+          this.budget(resourceFor(url)).resetAt ?? new Date(Date.now() + 60_000),
           url,
         );
       }
@@ -236,27 +264,37 @@ export class GitHubClient {
   }
 
   private assertBudget(url: string) {
-    if (this.rateLimit.remaining > RESERVED_REQUESTS) return;
-    const resetAt = this.rateLimit.resetAt;
+    const resource = resourceFor(url);
+    const state = this.budget(resource);
+    if (state.remaining > RESERVED_REQUESTS[resource]) return;
+
+    const resetAt = state.resetAt;
     if (resetAt && resetAt.getTime() <= Date.now()) {
       // The window rolled over; the next response will tell us the real number.
-      this.rateLimit.remaining = this.rateLimit.limit;
+      state.remaining = state.limit;
       return;
     }
+
     throw new RateLimitError(
-      "GitHub rate limit budget reserved for user-facing requests",
+      `GitHub ${resource} rate limit budget reserved for user-facing requests`,
       resetAt ?? new Date(Date.now() + 60_000),
       url,
     );
   }
 
-  private readRateLimit(response: Response) {
+  private readRateLimit(response: Response, url: string) {
+    // GitHub names the bucket it metered the request against, which is more
+    // reliable than inferring it from the URL.
+    const header = response.headers.get("x-ratelimit-resource");
+    const resource = isRateLimitResource(header) ? header : resourceFor(url);
+    const state = this.budget(resource);
+
     const limit = Number(response.headers.get("x-ratelimit-limit"));
     const remaining = Number(response.headers.get("x-ratelimit-remaining"));
     const reset = Number(response.headers.get("x-ratelimit-reset"));
-    if (Number.isFinite(limit) && limit > 0) this.rateLimit.limit = limit;
-    if (Number.isFinite(remaining)) this.rateLimit.remaining = remaining;
-    if (Number.isFinite(reset) && reset > 0) this.rateLimit.resetAt = new Date(reset * 1000);
+    if (Number.isFinite(limit) && limit > 0) state.limit = limit;
+    if (Number.isFinite(remaining)) state.remaining = remaining;
+    if (Number.isFinite(reset) && reset > 0) state.resetAt = new Date(reset * 1000);
   }
 }
 
@@ -267,6 +305,15 @@ async function safeText(response: Response): Promise<string> {
   } catch {
     return "<no body>";
   }
+}
+
+function resourceFor(url: string): RateLimitResource {
+  if (url === GRAPHQL_URL) return "graphql";
+  return url.includes("/search/") ? "search" : "core";
+}
+
+function isRateLimitResource(value: string | null): value is RateLimitResource {
+  return value === "core" || value === "search" || value === "graphql";
 }
 
 function sleep(ms: number): Promise<void> {
