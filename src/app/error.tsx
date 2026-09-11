@@ -21,7 +21,7 @@ export default function Error({
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-24 sm:px-6">
-      <h1 className="font-display text-3xl tracking-tight">That did not load</h1>
+      <h1 className="text-2xl font-semibold tracking-[-0.02em] sm:text-3xl">That did not load</h1>
       <p className="mt-3 max-w-lg text-sm leading-relaxed text-ink-soft">
         Your queue, your saved issues and your profile are all stored server-side, so nothing is
         lost. Try again.

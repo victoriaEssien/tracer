@@ -11,21 +11,22 @@ Tracer is not a browsing experience. Someone opens it with a free evening and a 
 Two registers, because the product has two jobs:
 
 - **The queue** (feed, saved, dismissed) is a **console**. Rows, not cards. Score as the primary axis. Dense enough to compare twenty things without scrolling, quiet enough to read forty without fatigue. Operate mode: scanability beats expression.
-- **The dossier** (opportunity detail) is **editorial**. This is where the reasoning lives, and reasoning needs measure, rhythm and room. Serif display, 65 to 75 characters, real paragraph structure.
+- **The dossier** (opportunity detail) is **editorial in layout, not in voice**. This is where the reasoning lives, and reasoning needs measure, rhythm and room: a 65 to 75 character measure, real paragraph structure, panels separated by rules. The typeface stays the interface sans, because the issue title is a stranger's words rather than ours.
 
 The two registers share tokens, spacing and icons, so moving between them reads as one product changing gear rather than two designs.
 
 ## Type
 
-Self-hosted through `next/font/google`, subset and preloaded.
+Two faces, self-hosted through `next/font/google`, subset and preloaded.
 
 | Role | Face | Use |
 | --- | --- | --- |
-| UI and body | **Instrument Sans** | Every interface label, control, list row, paragraph in the console register. |
-| Display | **Instrument Serif** | The dossier title, the landing statement, section openers in Read surfaces. Never in the console. |
-| Data | **JetBrains Mono** | Scores, counts, repository identifiers, file paths, latencies, weights. Measurement only, never as a costume for "technical". |
+| Everything the interface says | **Instrument Sans** | Labels, controls, rows, headings, paragraphs. Display sizes use 600 with tracking pulled to -0.03em. |
+| Anything measured | **JetBrains Mono** | Scores, counts, repository identifiers, file paths, latencies, weights. Measurement only, never as a costume for "technical". |
 
-Scale steps: 0.75 / 0.8125 / 0.875 / 1 / 1.125 / 1.5 / 2 / 3rem. Tracking tightens as size grows, floor -0.03em. Display is balanced and capped at 3rem; the landing statement is the only place it runs large.
+There is no display serif. One was tried and cut: it gave a stranger's terse issue title the typographic dignity of a magazine headline, and the family ships a single 400 weight, so headings could not be given the weight they needed. Emphasis comes from weight and size instead.
+
+Scale steps: 0.75 / 0.8125 / 0.875 / 1 / 1.125 / 1.5 / 2 / 3rem. Tracking tightens as size grows, floor -0.03em. The landing statement is the only place type runs past 3rem.
 
 Numerals are tabular everywhere a number can change: scores, weights, counts, latencies.
 

@@ -39,7 +39,7 @@ export default async function OpportunityPage({ params }: { params: Promise<{ id
       <BackLink />
 
       <header className="mt-5 mb-8">
-        <h1 className="font-display text-3xl leading-[1.15] tracking-tight text-balance sm:text-4xl">
+        <h1 className="text-2xl leading-[1.2] font-semibold tracking-tight text-balance sm:text-3xl">
           {issue.title}
         </h1>
 

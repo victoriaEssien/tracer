@@ -17,12 +17,12 @@ export const metadata = {
  */
 export default function ResourcesPage() {
   return (
-    <main id="main" className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16">
-      <h1 className="font-display text-4xl leading-[1.1] tracking-tight text-balance">
+    <main id="main" className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16 lg:max-w-[42rem]">
+      <h1 className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance sm:text-4xl">
         Your first contribution
       </h1>
 
-      <p className="mt-5 text-base leading-relaxed text-ink-soft">
+      <p className="mt-5 text-base leading-relaxed text-ink-soft lg:text-lg">
         Contributing to open source is a small, mechanical process wrapped in a lot of unspoken
         etiquette. The mechanics take an afternoon to learn. The etiquette is what stops most people,
         so it is written down here too.
@@ -58,8 +58,8 @@ export default function ResourcesPage() {
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div>
-                  <h3 className="text-sm font-medium">{item.step}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-ink-soft">{item.body}</p>
+                  <h3 className="text-sm font-medium lg:text-base">{item.step}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-soft lg:text-base">{item.body}</p>
                 </div>
               </li>
             ))}
@@ -87,15 +87,15 @@ export default function ResourcesPage() {
               },
             ].map((item) => (
               <div key={item.q}>
-                <dt className="text-sm font-medium">{item.q}</dt>
-                <dd className="mt-1 text-sm leading-relaxed text-ink-soft">{item.a}</dd>
+                <dt className="text-sm font-medium lg:text-base">{item.q}</dt>
+                <dd className="mt-1 text-sm leading-relaxed text-ink-soft lg:text-base">{item.a}</dd>
               </div>
             ))}
           </dl>
         </Panel>
 
         <Panel title="How to read a Tracer score">
-          <p className="text-sm leading-relaxed text-ink-soft">
+          <p className="text-sm leading-relaxed text-ink-soft lg:text-base">
             The number is a summary, not the point. What matters is underneath it.
           </p>
           <dl className="mt-5 space-y-4">
@@ -114,8 +114,8 @@ export default function ResourcesPage() {
               },
             ].map((item) => (
               <div key={item.q}>
-                <dt className="text-sm font-medium">{item.q}</dt>
-                <dd className="mt-1 text-sm leading-relaxed text-ink-soft">{item.a}</dd>
+                <dt className="text-sm font-medium lg:text-base">{item.q}</dt>
+                <dd className="mt-1 text-sm leading-relaxed text-ink-soft lg:text-base">{item.a}</dd>
               </div>
             ))}
           </dl>
@@ -141,11 +141,11 @@ export default function ResourcesPage() {
               },
             ].map((item) => (
               <li key={item.href}>
-                <ExternalLink href={item.href} className="text-sm font-medium hover:text-accent">
+                <ExternalLink href={item.href} className="text-sm font-medium hover:text-accent lg:text-base">
                   {item.title}
                   <ArrowUpRight size={13} strokeWidth={2} aria-hidden />
                 </ExternalLink>
-                <p className="mt-0.5 text-sm leading-relaxed text-ink-soft">{item.note}</p>
+                <p className="mt-0.5 text-sm leading-relaxed text-ink-soft lg:text-base">{item.note}</p>
               </li>
             ))}
           </ul>
@@ -153,7 +153,7 @@ export default function ResourcesPage() {
       </div>
 
       <div className="mt-14 border-t border-line pt-8">
-        <p className="max-w-prose text-sm leading-relaxed text-ink-soft">
+        <p className="max-w-prose text-sm leading-relaxed text-ink-soft lg:text-base">
           When you are ready, the queue does the filtering so you can spend your time on the work
           instead of the search.
         </p>

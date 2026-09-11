@@ -31,7 +31,7 @@ export function VerdictPanel({ recommendation }: { recommendation: Recommendatio
           size="lg"
         />
         <div className="min-w-0 flex-1">
-          <p className="font-display text-xl leading-snug tracking-tight text-balance">
+          <p className="text-xl leading-snug font-semibold tracking-tight text-balance">
             {VERDICT_COPY[recommendation.verdict].label}.
           </p>
           <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-ink-soft">

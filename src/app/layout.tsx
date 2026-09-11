@@ -1,24 +1,18 @@
 import type { Metadata } from "next";
-import { Instrument_Sans, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
 
+import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
 import "./globals.css";
 
 /**
- * Three faces, three jobs (DESIGN.md): sans for the interface, serif for the
- * dossier, mono for data. Self-hosted and preloaded by next/font, so none of
- * them cost a round trip to a third party.
+ * Two faces (DESIGN.md): sans for everything the interface says, mono for
+ * anything measured. Self-hosted and preloaded by next/font, so neither costs
+ * a round trip to a third party.
  */
 const sans = Instrument_Sans({
   subsets: ["latin"],
   variable: "--font-instrument-sans",
-  display: "swap",
-});
-
-const serif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-instrument-serif",
   display: "swap",
 });
 
@@ -43,8 +37,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable} ${mono.variable}`}>
-      <body className="min-h-screen font-sans antialiased">
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+      <body className="flex min-h-screen flex-col font-sans antialiased">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-ink focus:px-3 focus:py-2 focus:text-sm focus:text-canvas"
@@ -52,7 +46,8 @@ export default function RootLayout({
           Skip to content
         </a>
         <SiteNav />
-        {children}
+        <div className="flex-1">{children}</div>
+        <SiteFooter />
       </body>
     </html>
   );

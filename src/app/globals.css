@@ -74,7 +74,6 @@
 
   /* Bound to next/font in layout.tsx, which self-hosts and preloads them. */
   --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, Menlo, monospace;
 }
 
