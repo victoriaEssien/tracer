@@ -2,7 +2,9 @@ import Link from "next/link";
 
 import { auth, signOut } from "@/auth";
 import { GitHubButton } from "@/components/github-button";
+import { Logo } from "@/components/logo";
 import { NavLink } from "@/components/nav-link";
+import { SiteNavMenu } from "@/components/site-nav-menu";
 import { Button } from "@/components/ui";
 
 const LINKS = [
@@ -12,37 +14,59 @@ const LINKS = [
   { href: "/profile", label: "Profile", owns: ["/onboarding"] },
 ];
 
+/** A server action, so signing out works with no client JavaScript. */
+function SignOutButton() {
+  return (
+    <form
+      action={async () => {
+        "use server";
+        await signOut({ redirectTo: "/" });
+      }}
+    >
+      <Button variant="ghost" size="sm" type="submit">
+        Sign out
+      </Button>
+    </form>
+  );
+}
+
 export async function SiteNav() {
   const session = await auth();
 
+  // A fixed height rather than whatever the contents come to: the queue's
+  // filter bar sticks directly beneath this, and it needs a number to stick to.
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-canvas/88 backdrop-blur-sm">
-      <nav className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-5 gap-y-2 px-4 py-3 sm:px-8">
+      <nav
+        aria-label="Main"
+        className="relative mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4 sm:px-8"
+      >
         <Link
           href={session ? "/feed" : "/"}
-          className="text-sm font-semibold tracking-tight lowercase"
+          className="flex items-center gap-2"
+          aria-label="Tracer home"
         >
-          tracer
+          <Logo size={19} />
+          <span className="text-sm font-semibold tracking-tight lowercase">tracer</span>
         </Link>
 
         {session ? (
-          <div className="flex flex-wrap items-center gap-x-0.5">
-            {LINKS.map((link) => (
-              <NavLink key={link.href} href={link.href} owns={link.owns}>
-                {link.label}
-              </NavLink>
-            ))}
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
-            >
-              <Button variant="ghost" size="sm" type="submit" className="ml-1">
-                Sign out
-              </Button>
-            </form>
-          </div>
+          <>
+            <div className="hidden items-center gap-0.5 md:flex">
+              {LINKS.map((link) => (
+                <NavLink key={link.href} href={link.href} owns={link.owns}>
+                  {link.label}
+                </NavLink>
+              ))}
+              <div className="ml-1">
+                <SignOutButton />
+              </div>
+            </div>
+
+            <SiteNavMenu links={LINKS}>
+              <SignOutButton />
+            </SiteNavMenu>
+          </>
         ) : (
           <div className="flex items-center gap-1 sm:gap-3">
             <Link

@@ -132,6 +132,20 @@ a {
   text-underline-offset: 2px;
 }
 
+/**
+ * A strip that scrolls sideways without advertising it. Used where a row of
+ * controls has to stay one row on a narrow screen; the scrollbar itself would
+ * be taller than the gap it sits in.
+ */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

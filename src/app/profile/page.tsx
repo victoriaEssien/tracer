@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth, currentUserId } from "@/auth";
@@ -8,7 +9,10 @@ import { getUserProfile } from "@/server/db/queries";
 import { getLearnedPreferences } from "@/server/opportunities";
 import type { ScoreDimension } from "@/types";
 
-export const metadata = { title: "Profile" };
+export const metadata: Metadata = {
+  title: "Profile",
+  robots: { index: false, follow: false },
+};
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
@@ -65,10 +69,15 @@ export default async function ProfilePage() {
 
           <div className="border-t border-line pt-4">
             <p className="mb-3 text-xs text-ink-faint">Your current weights</p>
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
+            {/* Two columns at most. Four left every label too narrow to read,
+                and a truncated dimension name explains nothing. */}
+            <dl className="grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
               {weights.map(([dimension, weight]) => (
-                <div key={dimension} className="flex items-baseline justify-between gap-2">
-                  <dt className="truncate text-xs text-ink-soft">{DIMENSION_LABELS[dimension]}</dt>
+                <div
+                  key={dimension}
+                  className="flex items-baseline justify-between gap-3 border-b border-line/70 pb-1.5"
+                >
+                  <dt className="text-xs text-ink-soft">{DIMENSION_LABELS[dimension]}</dt>
                   <dd className="font-mono text-xs font-medium tabular-nums">
                     {Math.round(weight * 100)}%
                   </dd>

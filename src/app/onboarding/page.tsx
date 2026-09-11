@@ -1,10 +1,14 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { currentUserId } from "@/auth";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 import { getUserProfile } from "@/server/db/queries";
 
-export const metadata = { title: "Set up" };
+export const metadata: Metadata = {
+  title: "Set up",
+  robots: { index: false, follow: false },
+};
 
 export default async function OnboardingPage() {
   const userId = await currentUserId();

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Logo } from "@/components/logo";
 import { ExternalLink } from "@/components/ui";
 
 const REPOSITORY = "https://github.com/victoriaEssien/tracer";
@@ -7,10 +8,13 @@ const REPOSITORY = "https://github.com/victoriaEssien/tracer";
 export function SiteFooter() {
   return (
     <footer className="mt-20 border-t border-line">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-start justify-between gap-x-8 gap-y-6 px-4 py-8 sm:px-8">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-start justify-between gap-x-8 gap-y-8 px-4 py-10 sm:px-8">
         <div>
-          <p className="text-sm font-semibold tracking-tight lowercase">tracer</p>
-          <p className="mt-1 text-xs text-ink-faint">Find open-source work worth doing.</p>
+          <p className="flex items-center gap-2 text-sm font-semibold tracking-tight lowercase">
+            <Logo size={17} />
+            tracer
+          </p>
+          <p className="mt-1.5 text-xs text-ink-faint">Find open-source work worth doing.</p>
         </div>
 
         <nav aria-label="Footer" className="flex flex-wrap gap-x-8 gap-y-4 text-xs">

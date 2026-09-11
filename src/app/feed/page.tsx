@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { currentUserId } from "@/auth";
@@ -6,7 +7,12 @@ import { PageHeader } from "@/components/ui";
 import { getUserProfile } from "@/server/db/queries";
 import { getFeed } from "@/server/opportunities";
 
-export const metadata = { title: "Feed" };
+// Nothing behind sign-in belongs in a search result: a crawler following a
+// shared link only ever reaches the redirect.
+export const metadata: Metadata = {
+  title: "Your queue",
+  robots: { index: false, follow: false },
+};
 export const dynamic = "force-dynamic";
 
 export default async function FeedPage({

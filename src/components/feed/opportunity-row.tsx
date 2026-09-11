@@ -89,7 +89,7 @@ export const OpportunityRow = forwardRef<
         selected ? "bg-raised" : "hover:bg-raised/60",
       )}
     >
-      <div className="flex gap-4">
+      <div className="flex gap-3 sm:gap-4">
         <div className="shrink-0 pt-0.5">
           <ScoreMeter
             value={opportunity.score}
@@ -111,7 +111,9 @@ export const OpportunityRow = forwardRef<
           </div>
 
           <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-ink-faint">
-            <span className="font-mono">{opportunity.repository.fullName}</span>
+            <span className="max-w-full font-mono break-all">
+              {opportunity.repository.fullName}
+            </span>
             <span aria-hidden>·</span>
             <span className="font-mono tabular-nums">
               {formatCompactNumber(opportunity.repository.stars)} stars
@@ -140,13 +142,13 @@ export const OpportunityRow = forwardRef<
           <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
             <Link
               href={`/opportunities/${opportunity.id}`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1 text-xs font-medium transition-colors duration-100 hover:border-line-strong hover:bg-surface"
+              className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-line px-2.5 py-1 text-xs font-medium transition-colors duration-100 hover:border-line-strong hover:bg-surface"
             >
               See the reasoning
             </Link>
             <ExternalLink
               href={opportunity.issueUrl}
-              className="rounded-md border border-line px-2.5 py-1 text-xs font-medium transition-colors duration-100 hover:border-line-strong hover:bg-surface"
+              className="min-h-8 rounded-md border border-line px-2.5 py-1 text-xs font-medium transition-colors duration-100 hover:border-line-strong hover:bg-surface"
             >
               Open on GitHub
               <ArrowUpRight size={12} strokeWidth={2} aria-hidden />

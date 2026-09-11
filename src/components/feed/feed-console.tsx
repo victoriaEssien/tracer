@@ -117,8 +117,17 @@ export function FeedConsole({
 
   return (
     <div>
-      <div className="sticky top-13 z-10 -mx-3 mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line bg-canvas/92 px-3 py-2.5 backdrop-blur-sm sm:-mx-4 sm:px-4">
-        <div role="group" aria-label="Filter by verdict" className="flex flex-wrap gap-0.5">
+      <div className="sticky top-14 z-10 -mx-3 mb-1 flex items-center gap-2 border-b border-line bg-canvas/92 px-3 py-2.5 backdrop-blur-sm sm:-mx-4 sm:gap-4 sm:px-4">
+        {/* Scrolls sideways rather than wrapping, so the bar it is stuck in
+            stays one row tall on the screen with the least room for two. The
+            five filters come to more than a phone is wide, so the right edge
+            fades: a filter cut off square reads as one hidden behind the
+            button next to it, rather than as more to scroll through. */}
+        <div
+          role="group"
+          aria-label="Filter by verdict"
+          className="no-scrollbar -my-1 -ml-1 flex min-w-0 flex-1 gap-0.5 overflow-x-auto py-1 pr-5 pl-1 [mask-image:linear-gradient(to_right,black_calc(100%_-_1.25rem),transparent)] sm:pr-0 sm:[mask-image:none]"
+        >
           {FILTERS.map((option) => (
             <button
               key={option.value}
@@ -126,7 +135,7 @@ export function FeedConsole({
               aria-pressed={filter === option.value}
               onClick={() => setFilter(option.value)}
               className={cn(
-                "rounded px-2 py-1 text-xs font-medium transition-colors duration-100",
+                "inline-flex min-h-8 shrink-0 items-center rounded px-2.5 text-xs font-medium whitespace-nowrap transition-colors duration-100",
                 filter === option.value
                   ? "bg-ink text-canvas"
                   : "text-ink-faint hover:bg-raised hover:text-ink",
@@ -142,13 +151,21 @@ export function FeedConsole({
           ))}
         </div>
 
-        <Button onClick={start} disabled={running} size="sm">
+        {/* The label is the first thing to go when there is no room for it:
+            losing it costs less than losing a filter to a collision. */}
+        <Button
+          onClick={start}
+          disabled={running}
+          size="sm"
+          className="shrink-0"
+          aria-label={running ? "Searching" : "Find more"}
+        >
           {running ? (
             <Loader2 size={12} strokeWidth={2} aria-hidden className="animate-spin" />
           ) : (
             <RefreshCw size={12} strokeWidth={2} aria-hidden />
           )}
-          {running ? "Searching" : "Find more"}
+          <span className="hidden sm:inline">{running ? "Searching" : "Find more"}</span>
         </Button>
       </div>
 

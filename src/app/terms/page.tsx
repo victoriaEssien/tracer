@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
+
 import { Panel } from "@/components/ui";
 
-export const metadata = {
+const DESCRIPTION = "What Tracer promises, what it does not, and what is expected of you.";
+
+export const metadata: Metadata = {
   title: "Terms",
-  description: "What Tracer promises, what it does not, and what is expected of you.",
+  description: DESCRIPTION,
+  alternates: { canonical: "/terms" },
+  openGraph: { title: "Terms · Tracer", description: DESCRIPTION, url: "/terms" },
 };
 
 const UPDATED = "11 September 2026";

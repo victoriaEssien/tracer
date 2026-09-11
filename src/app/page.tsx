@@ -12,6 +12,7 @@ import {
 import { HeroDemo } from "@/components/marketing/hero-demo";
 import { Chip, ExternalLink, InlineLabel } from "@/components/ui";
 import { DIMENSION_LABELS, DIMENSION_WEIGHTS } from "@/config/scoring";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/config/site";
 import { getUserProfile } from "@/server/db/queries";
 import type { ScoreDimension } from "@/types";
 
@@ -73,6 +74,44 @@ const FAQ = [
 ];
 
 /**
+ * What a search engine reads instead of the page.
+ *
+ * The questions and answers are the same ones rendered below, which is what
+ * Google requires of a FAQ result: no claim here that a visitor cannot also
+ * see. Built from the same constants for that reason.
+ */
+function structuredData() {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": `${SITE_URL}/#app`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        description: SITE_DESCRIPTION,
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "Any",
+        browserRequirements: "Requires a GitHub account",
+        isAccessibleForFree: true,
+        license: `${REPOSITORY}/blob/main/LICENSE`,
+        codeRepository: REPOSITORY,
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${SITE_URL}/#faq`,
+        mainEntity: FAQ.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
+  };
+}
+
+/**
  * The landing page, and the sign-in surface. Persuade mode.
  *
  * Centred composition, product-led: the hero carries a live switch between what
@@ -91,6 +130,11 @@ export default async function Home() {
 
   return (
     <main id="main">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData()) }}
+      />
+
       <section className="mx-auto max-w-5xl px-4 pt-16 pb-20 text-center sm:px-8 sm:pt-24">
         <Link
           href="/resources"
@@ -99,7 +143,7 @@ export default async function Home() {
           Never contributed before? Start here
         </Link>
 
-        <h1 className="mx-auto mt-6 max-w-3xl text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.035em] text-balance sm:text-6xl">
+        <h1 className="mx-auto mt-6 max-w-3xl text-[2.25rem] leading-[1.04] font-semibold tracking-[-0.035em] text-balance sm:text-6xl sm:leading-[1.02]">
           Find open-source issues actually worth your time
         </h1>
 
@@ -237,11 +281,11 @@ export default async function Home() {
             </div>
           </div>
 
-          <dl className="divide-y divide-line rounded-xl border border-line bg-surface px-5">
+          <dl className="divide-y divide-line rounded-xl border border-line bg-surface px-4 sm:px-5">
             {dimensions.map(([dimension, weight]) => (
               <div key={dimension} className="flex items-center gap-4 py-3">
-                <dt className="w-32 shrink-0 text-sm font-medium">{DIMENSION_LABELS[dimension]}</dt>
-                <dd className="flex flex-1 items-center gap-3">
+                <dt className="w-28 shrink-0 text-sm font-medium sm:w-32">{DIMENSION_LABELS[dimension]}</dt>
+                <dd className="flex min-w-0 flex-1 items-center gap-3">
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-raised">
                     <div
                       className="h-full rounded-full bg-accent"

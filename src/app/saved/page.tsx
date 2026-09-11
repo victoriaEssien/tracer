@@ -1,4 +1,5 @@
 import { Bookmark } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -8,7 +9,10 @@ import { EmptyState, LinkButton, PageHeader } from "@/components/ui";
 import { relativeTime } from "@/lib/utils";
 import { getSaved } from "@/server/opportunities";
 
-export const metadata = { title: "Saved" };
+export const metadata: Metadata = {
+  title: "Saved",
+  robots: { index: false, follow: false },
+};
 export const dynamic = "force-dynamic";
 
 export default async function SavedPage() {

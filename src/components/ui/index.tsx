@@ -19,6 +19,8 @@ import type { Confidence, Difficulty, Verdict } from "@/types";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "active";
 
+// The minimum heights are a touch floor. A 24px control is comfortable with a
+// mouse and a coin toss with a thumb, and every one of these appears on a phone.
 const BUTTON_BASE =
   "inline-flex items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-colors duration-100 disabled:cursor-not-allowed disabled:opacity-45";
 
@@ -39,7 +41,7 @@ export function Button({
     <button
       className={cn(
         BUTTON_BASE,
-        size === "sm" ? "px-2.5 py-1 text-xs" : "px-3 py-1.5",
+        size === "sm" ? "min-h-8 px-2.5 py-1 text-xs" : "min-h-9 px-3 py-1.5",
         BUTTON_STYLES[variant],
         className,
       )}
@@ -58,7 +60,7 @@ export function LinkButton({
     <Link
       className={cn(
         BUTTON_BASE,
-        size === "sm" ? "px-2.5 py-1 text-xs" : "px-3 py-1.5",
+        size === "sm" ? "min-h-8 px-2.5 py-1 text-xs" : "min-h-9 px-3 py-1.5",
         BUTTON_STYLES[variant],
         className,
       )}
@@ -130,8 +132,8 @@ export function PageHeader({
 }) {
   return (
     <div className="mb-7 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+      <div className="min-w-0">
+        <h1 className="text-2xl font-semibold tracking-tight text-balance">{title}</h1>
         {lede ? <p className="mt-1.5 max-w-xl text-sm text-ink-soft">{lede}</p> : null}
       </div>
       {actions}
@@ -151,7 +153,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 border border-dashed border-line px-6 py-16 text-center">
+    <div className="flex flex-col items-center gap-3 border border-dashed border-line px-4 py-12 text-center sm:px-6 sm:py-16">
       {Icon ? <Icon size={20} strokeWidth={1.5} className="text-ink-faint" aria-hidden /> : null}
       <p className="text-sm font-medium">{title}</p>
       {children ? (

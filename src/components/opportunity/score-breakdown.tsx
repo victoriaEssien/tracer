@@ -30,12 +30,12 @@ export function ScoreBreakdown({
 
           return (
             <div key={entry.dimension} className="py-3.5 first:pt-0 last:pb-0">
-              <div className="flex items-baseline justify-between gap-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <div className="flex items-baseline gap-2">
                   <span className="text-sm font-medium">{entry.label}</span>
                   <ConfidenceNote confidence={entry.confidence} />
                 </div>
-                <div className="flex items-baseline gap-2 font-mono text-xs text-ink-faint tabular-nums">
+                <div className="flex shrink-0 items-baseline gap-2 font-mono text-xs text-ink-faint tabular-nums">
                   <span>{Math.round(entry.raw * 100)}</span>
                   <span aria-hidden>x</span>
                   <span>{Math.round(entry.weight * 100)}%</span>

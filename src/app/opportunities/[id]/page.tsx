@@ -1,4 +1,5 @@
 import { ArrowUpRight, MessageSquare } from "lucide-react";
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
 import { currentUserId } from "@/auth";
@@ -16,12 +17,20 @@ import { getOpportunity } from "@/server/opportunities";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  // Someone else's issue, scored for one person. Never indexed.
+  const robots = { index: false, follow: false };
+
   const userId = await currentUserId();
-  if (!userId) return { title: "Opportunity" };
+  if (!userId) return { title: "Opportunity", robots };
+
   const { id } = await params;
   const detail = await getOpportunity(userId, id);
-  return { title: detail ? detail.issue.title : "Opportunity" };
+  return { title: detail ? detail.issue.title : "Opportunity", robots };
 }
 
 export default async function OpportunityPage({ params }: { params: Promise<{ id: string }> }) {

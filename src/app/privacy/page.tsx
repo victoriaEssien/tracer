@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
+
 import { Panel } from "@/components/ui";
 
-export const metadata = {
+const DESCRIPTION = "What Tracer stores, why, who else sees it, and how to get rid of it.";
+
+export const metadata: Metadata = {
   title: "Privacy",
-  description: "What Tracer stores, why, who else sees it, and how to get rid of it.",
+  description: DESCRIPTION,
+  alternates: { canonical: "/privacy" },
+  openGraph: { title: "Privacy · Tracer", description: DESCRIPTION, url: "/privacy" },
 };
 
 const UPDATED = "11 September 2026";

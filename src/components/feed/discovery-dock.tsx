@@ -133,7 +133,7 @@ export function DiscoveryDock({
             type="button"
             onClick={cancel}
             aria-label={finished ? "Dismiss" : "Stop the search"}
-            className="-m-1 rounded p-1 text-ink-faint transition-colors duration-100 hover:text-ink"
+            className="-mt-1.5 -mr-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded text-ink-faint transition-colors duration-100 hover:bg-raised hover:text-ink"
           >
             <X size={14} strokeWidth={2} aria-hidden />
           </button>

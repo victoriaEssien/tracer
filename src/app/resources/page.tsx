@@ -1,11 +1,26 @@
 import { ArrowUpRight } from "lucide-react";
+import type { Metadata } from "next";
 
 import { ExternalLink, LinkButton, Panel } from "@/components/ui";
 
-export const metadata = {
+const DESCRIPTION =
+  "What actually happens when you contribute to an open-source project for the first time: finding a free issue, claiming it, opening the pull request, and what to expect back.";
+
+export const metadata: Metadata = {
   title: "Your first contribution",
-  description:
-    "What actually happens when you contribute to an open-source project, and how to read what Tracer tells you about an issue.",
+  description: DESCRIPTION,
+  keywords: [
+    "first open source contribution",
+    "how to contribute to open source",
+    "first pull request",
+    "open source for beginners",
+  ],
+  alternates: { canonical: "/resources" },
+  openGraph: {
+    title: "Your first contribution · Tracer",
+    description: DESCRIPTION,
+    url: "/resources",
+  },
 };
 
 /**
