@@ -53,9 +53,7 @@ git add drizzle/    # the migration is part of the change, not a side effect
 
 `pnpm build` ends with `node scripts/migrate.mjs`, which applies any migration production has not seen yet. It runs only when `VERCEL_ENV` is `production`; a preview deployment or a local build prints why it is skipping and exits. If a migration fails, the build fails and nothing is promoted.
 
-`pnpm db:migrate:prod` does the same thing from a terminal, for when a database needs fixing without a deploy.
-
-Dev and production are separate Neon branches. On Vercel, `DATABASE_URL` is production. Locally it is dev, and production lives in `PROD_DATABASE_URL`, which nothing reads at runtime. Never point `push` at production: it reshapes the database to match the schema, dropping columns it does not recognise.
+Deploying is the only way to migrate production, and that is deliberate. Dev and production are separate Neon branches, and `DATABASE_URL` means whichever one the environment is: production on Vercel, dev in `.env.local`. The production connection string does not belong in a local env file, because every schema command reads `DATABASE_URL` and `push` drops columns to make the database match the schema.
 
 Two things the deploy step does not do, both of which shape how a migration should be written:
 
