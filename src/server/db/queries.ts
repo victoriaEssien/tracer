@@ -5,15 +5,17 @@
  * route handlers and jobs never assemble SQL themselves.
  */
 
-import { and, desc, eq, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
 
 import type {
   AiInsights,
   CollectedIssue,
   CollectedRepository,
   ContributionType,
+  Difficulty,
   ExperienceLevel,
   Recommendation,
+  ScoreDimension,
   SkillType,
   TimeCommitment,
   UserProfile,
@@ -506,14 +508,6 @@ export async function dismissOpportunity(userId: string, issueId: string): Promi
     .onConflictDoNothing();
 }
 
-export async function listDismissedIds(userId: string): Promise<string[]> {
-  const rows = await db
-    .select({ issueId: dismissedOpportunities.issueId })
-    .from(dismissedOpportunities)
-    .where(eq(dismissedOpportunities.userId, userId));
-  return rows.map((row) => row.issueId);
-}
-
 /* -------------------------------------------------------------------------- */
 /* Events                                                                     */
 /* -------------------------------------------------------------------------- */
@@ -524,8 +518,8 @@ export async function recordEvent(input: {
   type: "saved" | "unsaved" | "dismissed" | "viewed" | "opened";
   technologies?: string[];
   contributionTypes?: ContributionType[];
-  difficulty?: string | null;
-  dimensionScores?: Record<string, number> | null;
+  difficulty?: Difficulty | null;
+  dimensionScores?: Partial<Record<ScoreDimension, number>> | null;
 }): Promise<void> {
   await db.insert(userEvents).values({
     userId: input.userId,
@@ -533,8 +527,8 @@ export async function recordEvent(input: {
     type: input.type,
     technologies: input.technologies ?? [],
     contributionTypes: input.contributionTypes ?? [],
-    difficulty: (input.difficulty ?? null) as never,
-    dimensionScores: (input.dimensionScores ?? null) as never,
+    difficulty: input.difficulty ?? null,
+    dimensionScores: input.dimensionScores ?? null,
   });
 }
 
@@ -545,24 +539,4 @@ export async function listEvents(userId: string, limit = 300) {
     .where(eq(userEvents.userId, userId))
     .orderBy(desc(userEvents.createdAt))
     .limit(limit);
-}
-
-/** Issue ids the user has already acted on, so the feed does not repeat them. */
-export async function listActedOnIssueIds(userId: string): Promise<string[]> {
-  const [saved, dismissed] = await Promise.all([
-    db
-      .select({ issueId: savedOpportunities.issueId })
-      .from(savedOpportunities)
-      .where(eq(savedOpportunities.userId, userId)),
-    db
-      .select({ issueId: dismissedOpportunities.issueId })
-      .from(dismissedOpportunities)
-      .where(eq(dismissedOpportunities.userId, userId)),
-  ]);
-  return [...saved, ...dismissed].map((row) => row.issueId);
-}
-
-export async function issuesByIds(ids: string[]): Promise<IssueRow[]> {
-  if (ids.length === 0) return [];
-  return db.select().from(issues).where(inArray(issues.id, ids));
 }

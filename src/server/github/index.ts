@@ -13,7 +13,7 @@ import { accounts } from "@/server/db/schema";
 
 import { GitHubClient } from "./client";
 
-export { GitHubClient, GitHubError, RateLimitError, clearGitHubCache } from "./client";
+export { GitHubClient, GitHubError, RateLimitError } from "./client";
 export type { RateLimitState } from "./client";
 export { collectRepository, collectTopLevelPaths } from "./repositories";
 export { collectIssue, refreshIssueStatus } from "./issues";

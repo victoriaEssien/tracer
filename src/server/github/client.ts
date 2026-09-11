@@ -272,8 +272,3 @@ async function safeText(response: Response): Promise<string> {
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
-/** Clears the in-process response cache. Used by tests and the jobs runner. */
-export function clearGitHubCache(): void {
-  responseCache.clear();
-}

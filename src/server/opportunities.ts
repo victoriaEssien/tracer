@@ -23,6 +23,8 @@ import type {
   OpportunitySummary,
   Recommendation,
   SavedOpportunityView,
+  ScoreBreakdownEntry,
+  ScoreDimension,
   UserProfile,
 } from "@/types";
 import type { IssueRow, RepositoryRow } from "@/server/db/schema";
@@ -103,7 +105,7 @@ function toSummary(row: queries.FeedRow): OpportunitySummary {
     topReasons: reasons.length > 0 ? reasons : analysis.positives.slice(0, 3),
     topConcerns: concerns.length > 0 ? concerns : analysis.concerns.slice(0, 2),
     saved: row.savedAt !== null,
-    analyzedAt: (analysis.createdAt ?? new Date()).toISOString(),
+    analyzedAt: analysis.createdAt.toISOString(),
   };
 }
 
@@ -276,7 +278,7 @@ export async function getOpportunity(
     type: "viewed",
     technologies,
     difficulty: recommendation.analysis.difficulty,
-    dimensionScores: dimensionScores(recommendation),
+    dimensionScores: dimensionScores(recommendation.breakdown),
   });
 
   return {
@@ -383,9 +385,7 @@ export async function save(userId: string, issueId: string): Promise<void> {
     type: "saved",
     technologies: analysis.technologies,
     difficulty: analysis.difficulty,
-    dimensionScores: Object.fromEntries(
-      analysis.breakdown.map((entry) => [entry.dimension, entry.raw]),
-    ),
+    dimensionScores: dimensionScores(analysis.breakdown),
   });
 }
 
@@ -404,9 +404,7 @@ export async function dismiss(userId: string, issueId: string): Promise<void> {
     type: "dismissed",
     technologies: analysis?.technologies ?? [],
     difficulty: analysis?.difficulty ?? null,
-    dimensionScores: analysis
-      ? Object.fromEntries(analysis.breakdown.map((entry) => [entry.dimension, entry.raw]))
-      : null,
+    dimensionScores: analysis ? dimensionScores(analysis.breakdown) : null,
   });
 }
 
@@ -414,8 +412,8 @@ export async function dismiss(userId: string, issueId: string): Promise<void> {
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-function dimensionScores(recommendation: Recommendation): Record<string, number> {
-  return Object.fromEntries(
-    recommendation.breakdown.map((entry) => [entry.dimension, entry.raw]),
-  );
+function dimensionScores(
+  breakdown: ScoreBreakdownEntry[],
+): Partial<Record<ScoreDimension, number>> {
+  return Object.fromEntries(breakdown.map((entry) => [entry.dimension, entry.raw]));
 }
