@@ -48,6 +48,8 @@ export async function runDiscovery(
   options: DiscoveryOptions = {},
   /** Called as each step finishes, so the browser can show real progress. */
   onProgress: (progress: DiscoveryProgress) => void = () => {},
+  /** Aborts when the browser stops listening, so a cancelled run stops working. */
+  signal?: AbortSignal,
 ): Promise<DiscoveryResult> {
   const result: DiscoveryResult = {
     queriesRun: 0,
@@ -81,6 +83,7 @@ export async function runDiscovery(
 
   try {
     for (const query of searches) {
+      if (signal?.aborted) return result;
       // Every query runs. Stopping early because raw candidates looked
       // plentiful meant most language and label combinations were never tried,
       // and a repeat run kept re-reading the same two.
@@ -110,6 +113,7 @@ export async function runDiscovery(
 
   try {
     for (const [fullName, issueNumbers] of byRepository) {
+      if (signal?.aborted) return result;
       if (result.issuesCollected >= maxIssues) break;
       if (repositoryIds.size >= maxRepositories) break;
 
@@ -127,6 +131,7 @@ export async function runDiscovery(
       });
 
       for (const number of issueNumbers.slice(0, 4)) {
+        if (signal?.aborted) return result;
         if (result.issuesCollected >= maxIssues) break;
 
         const existing = await queries.findIssueByNumber(fullName, number);
@@ -150,6 +155,8 @@ export async function runDiscovery(
     // Whatever was collected before the limit is still worth scoring.
     result.rateLimited = true;
   }
+
+  if (signal?.aborted) return result;
 
   result.issuesAnalyzed = await analyzePending(userId, profile, maxIssues, (analyzed, total) =>
     onProgress({ phase: "scoring", analyzed, total }),

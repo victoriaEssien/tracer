@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   // A run takes a minute or two. Streaming lets the browser show what is
   // happening instead of holding a spinner over an opaque request.
   if (new URL(request.url).searchParams.get("stream") === "1") {
-    return streamDiscovery(userId, options);
+    return streamDiscovery(userId, options, request.signal);
   }
 
   try {
@@ -58,7 +58,11 @@ export async function POST(request: Request) {
   }
 }
 
-function streamDiscovery(userId: string, options: { maxIssues?: number; minStars?: number }) {
+function streamDiscovery(
+  userId: string,
+  options: { maxIssues?: number; minStars?: number },
+  signal: AbortSignal,
+) {
   const encoder = new TextEncoder();
 
   const body = new ReadableStream({
@@ -68,11 +72,17 @@ function streamDiscovery(userId: string, options: { maxIssues?: number; minStars
       };
 
       try {
-        const result = await runDiscovery(userId, options, send);
-        send({ phase: "done", scored: result.issuesAnalyzed, rateLimited: result.rateLimited });
+        const result = await runDiscovery(userId, options, send, signal);
+        // A cancelled run returns what it managed; there is nobody left to tell.
+        if (!signal.aborted) {
+          send({ phase: "done", scored: result.issuesAnalyzed, rateLimited: result.rateLimited });
+        }
       } catch (caught) {
-        console.error("Discovery run failed", caught);
-        send({ phase: "error", message: "The search stopped early. Anything found was kept." });
+        // A cancelled run is not a failure, and nobody is listening anyway.
+        if (!signal.aborted) {
+          console.error("Discovery run failed", caught);
+          send({ phase: "error", message: "The search stopped early. Anything found was kept." });
+        }
       } finally {
         controller.close();
       }

@@ -25,19 +25,31 @@ export function DiscoveryDock({
   onFinished: () => void;
 }) {
   const [progress, setProgress] = useState<DiscoveryProgress | null>(null);
-  const [hidden, setHidden] = useState(false);
   const active = useRef(false);
+  const controller = useRef<AbortController | null>(null);
+  const cancelled = useRef(false);
+
+  /** Closing the widget stops the search, on this end and on the server's. */
+  const cancel = useCallback(() => {
+    cancelled.current = true;
+    controller.current?.abort();
+    setProgress(null);
+  }, []);
 
   const run = useCallback(async () => {
-    setHidden(false);
+    cancelled.current = false;
     setProgress({ phase: "searching", queriesRun: 0, queriesTotal: 12, candidates: 0 });
+
+    const abort = new AbortController();
+    controller.current = abort;
+    const timer = setTimeout(() => abort.abort(), TIMEOUT_MS);
 
     try {
       const response = await fetch("/api/jobs/discovery?stream=1", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ maxIssues: 30 }),
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        signal: abort.signal,
       });
 
       if (!response.ok || !response.body) {
@@ -69,11 +81,15 @@ export function DiscoveryDock({
         }
       }
     } catch {
-      setProgress({
-        phase: "error",
-        message: "That search did not finish. Try again in a moment.",
-      });
+      // Cancelling is a choice, not a failure, so it reports nothing.
+      if (!cancelled.current) {
+        setProgress({
+          phase: "error",
+          message: "That search did not finish. Try again in a moment.",
+        });
+      }
     } finally {
+      clearTimeout(timer);
       active.current = false;
       onFinished();
     }
@@ -85,7 +101,7 @@ export function DiscoveryDock({
     void run();
   }, [running, run]);
 
-  if (!progress || hidden) return null;
+  if (!progress) return null;
 
   const { label, detail, percent, partial } = describe(progress);
   const finished = progress.phase === "done" || progress.phase === "error";
@@ -115,8 +131,8 @@ export function DiscoveryDock({
 
           <button
             type="button"
-            onClick={() => setHidden(true)}
-            aria-label="Hide progress"
+            onClick={cancel}
+            aria-label={finished ? "Dismiss" : "Stop the search"}
             className="-m-1 rounded p-1 text-ink-faint transition-colors duration-100 hover:text-ink"
           >
             <X size={14} strokeWidth={2} aria-hidden />
@@ -139,7 +155,7 @@ export function DiscoveryDock({
         ) : null}
 
         {progress.phase === "done" && progress.scored > 0 ? (
-          <Button variant="secondary" size="sm" onClick={() => setHidden(true)} className="mt-3 w-full">
+          <Button variant="secondary" size="sm" onClick={cancel} className="mt-3 w-full">
             Show me
           </Button>
         ) : null}
