@@ -45,11 +45,17 @@ If it has already happened, `rm -rf .next` and restart. Check that port 3000 is 
 `pnpm db:push` is a dev convenience and needs an interactive terminal for its confirmation prompt. Production schema changes go through a committed migration:
 
 ```bash
-pnpm db:generate          # after editing schema.ts
-pnpm exec drizzle-kit migrate
+pnpm db:generate          # after editing schema.ts, commit the result
+pnpm db:migrate:prod      # applies committed migrations to the production branch
 ```
 
-Dev and production are separate Neon branches. `.env.local` points at the dev branch, and should never hold the production connection string — `db:push` drops columns to make the database match the schema.
+Dev and production are separate Neon branches, and `.env.local` holds both: `DATABASE_URL` for dev, `PROD_DATABASE_URL` for production.
+
+Only `migrate` ever runs against production, through `drizzle.config.prod.ts`. Never point `push` at it: push reshapes the database to match the schema, which includes dropping columns it does not recognise.
+
+The separate config exists because `drizzle.config.ts` loads `.env.local` with `override: true`, so a `DATABASE_URL` set on the command line is silently replaced by the dev one. Such a run reports success while production stays untouched, which is worse than a run that fails.
+
+A new environment starts with no tables at all, and every query fails with `42P01`. That is a missing migration, not a broken connection string.
 
 ## Package manager
 

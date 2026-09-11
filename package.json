@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
+    "db:migrate:prod": "drizzle-kit migrate --config drizzle.config.prod.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
