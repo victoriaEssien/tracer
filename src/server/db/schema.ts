@@ -13,6 +13,7 @@
  */
 
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -152,7 +153,9 @@ export const repositories = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    githubId: integer("github_id").notNull(),
+    // GitHub's own ids do not fit in 32 bits: issue ids are already past three
+    // billion, and repository ids are climbing towards the same ceiling.
+    githubId: bigint("github_id", { mode: "number" }).notNull(),
     owner: text("owner").notNull(),
     name: text("name").notNull(),
     fullName: text("full_name").notNull(),
@@ -188,7 +191,7 @@ export const issues = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    githubId: integer("github_id").notNull(),
+    githubId: bigint("github_id", { mode: "number" }).notNull(),
     repositoryId: text("repository_id")
       .notNull()
       .references(() => repositories.id, { onDelete: "cascade" }),
