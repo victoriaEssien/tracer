@@ -34,7 +34,7 @@ export function GitHubButton({
     <form
       action={async () => {
         "use server";
-        await signIn("github", { redirectTo: "/onboarding" });
+        await signIn("github", { redirectTo: "/feed" });
       }}
       className={className}
     >

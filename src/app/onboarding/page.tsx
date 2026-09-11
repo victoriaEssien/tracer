@@ -11,6 +11,7 @@ export default async function OnboardingPage() {
   if (!userId) redirect("/");
 
   const profile = await getUserProfile(userId);
+  if (profile?.onboardedAt) redirect("/profile");
 
   return (
     <main id="main" className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
