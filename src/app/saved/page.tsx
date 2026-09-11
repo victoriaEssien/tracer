@@ -56,7 +56,7 @@ export default async function SavedPage() {
         <div className="space-y-3">
           {saved.map((item) => (
             <div key={item.id}>
-              <OpportunityCard opportunity={item} />
+              <OpportunityCard opportunity={item} context="saved" />
               <p className="mt-1 px-4 text-xs text-ink-faint">
                 Saved {relativeTime(item.savedAt)} at {Math.round(item.scoreAtSave)}%
                 {Math.round(item.scoreAtSave) !== item.score

@@ -14,7 +14,7 @@ export async function SiteNav() {
 
   return (
     <header className="border-b border-line bg-surface">
-      <nav className="mx-auto flex max-w-5xl items-center justify-between gap-6 px-5 py-3">
+      <nav className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-3">
         <Link href={session ? "/feed" : "/"} className="flex items-baseline gap-2">
           <span className="font-mono text-sm font-semibold tracking-tight">tracer</span>
           <span className="hidden text-xs text-ink-faint sm:inline">
@@ -23,12 +23,12 @@ export async function SiteNav() {
         </Link>
 
         {session ? (
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-0.5 sm:gap-1">
             {LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="rounded-md px-2.5 py-1.5 text-sm text-ink-soft transition hover:bg-raised hover:text-ink"
+                className="rounded-md px-2 py-1.5 text-sm text-ink-soft transition hover:bg-raised hover:text-ink sm:px-2.5"
               >
                 {link.label}
               </Link>
