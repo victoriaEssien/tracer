@@ -48,10 +48,14 @@ export function ChipPicker({
     (item) => !options.some((option) => option.toLowerCase() === item.toLowerCase()),
   );
 
+  const inputId = `chip-${label.toLowerCase().replace(/[^a-z]+/g, "-")}`;
+
   return (
-    <div>
+    // A fieldset rather than a label: these are a group of toggle buttons, and
+    // a bare <label> points at nothing, which is what this used to do.
+    <fieldset className="border-0 p-0">
       <div className="mb-2 flex items-baseline justify-between gap-3">
-        <label className="text-sm font-medium">{label}</label>
+        <legend className="text-sm font-medium">{label}</legend>
         {hint ? <span className="text-xs text-ink-faint">{hint}</span> : null}
       </div>
 
@@ -79,7 +83,11 @@ export function ChipPicker({
 
       {allowCustom ? (
         <div className="mt-2 flex gap-2">
+          <label htmlFor={inputId} className="sr-only">
+            Add another {label.toLowerCase()}
+          </label>
           <input
+            id={inputId}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
@@ -89,7 +97,7 @@ export function ChipPicker({
               }
             }}
             placeholder="Something else…"
-            className="w-44 rounded-md border border-line bg-surface px-2.5 py-1 text-xs outline-none focus:border-ink-faint"
+            className="w-44 rounded-md border border-line bg-surface px-2.5 py-1 text-xs focus:border-ink-faint"
           />
           <button
             type="button"
@@ -100,6 +108,6 @@ export function ChipPicker({
           </button>
         </div>
       ) : null}
-    </div>
+    </fieldset>
   );
 }

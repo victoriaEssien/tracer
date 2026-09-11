@@ -15,13 +15,15 @@ import type { Confidence, Difficulty, Verdict } from "@/types";
 /* Button                                                                     */
 /* -------------------------------------------------------------------------- */
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "active";
 
 const BUTTON_STYLES: Record<ButtonVariant, string> = {
   primary: "bg-ink text-canvas hover:opacity-90",
   secondary: "border border-line bg-surface text-ink hover:bg-raised",
   ghost: "text-ink-soft hover:bg-raised hover:text-ink",
   danger: "border border-line text-bad hover:bg-bad-soft",
+  /** An on state, for toggles where the label alone reads as a noun. */
+  active: "border border-accent bg-accent-soft text-accent",
 };
 
 export function Button({
@@ -212,7 +214,7 @@ export function Score({
   } as const;
 
   return (
-    <div className="flex items-baseline gap-0.5">
+    <div className="flex items-baseline gap-0.5 whitespace-nowrap">
       <span className={cn("font-semibold tabular-nums", sizes[size], colors[tone])}>{value}</span>
       <span className={cn("text-xs font-medium", colors[tone])}>%</span>
     </div>
@@ -234,6 +236,31 @@ export function SignalBar({ value, tone = "ink" }: { value: number; tone?: "ink"
 /* -------------------------------------------------------------------------- */
 /* Reason lists                                                               */
 /* -------------------------------------------------------------------------- */
+
+/**
+ * A polite live region. Progress and error text is useless to a screen reader
+ * if it only appears visually, and every status message in this app is
+ * transient.
+ */
+export function StatusMessage({
+  children,
+  tone = "neutral",
+  className,
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "bad";
+  className?: string;
+}) {
+  return (
+    <p
+      role="status"
+      aria-live="polite"
+      className={cn("text-xs", tone === "bad" ? "text-bad" : "text-ink-faint", className)}
+    >
+      {children}
+    </p>
+  );
+}
 
 export function ReasonList({
   items,
