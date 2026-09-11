@@ -37,7 +37,7 @@ export function estimateDifficulty(input: {
     return {
       difficulty: "unclear",
       reasons: [],
-      concerns: ["There is not enough detail to estimate how hard this would be"],
+      concerns: ["Not enough detail to guess how hard this is"],
     };
   }
 
@@ -46,7 +46,7 @@ export function estimateDifficulty(input: {
 
   if (clarity === "low") {
     hardness += 0.15;
-    concerns.push("A thin issue description makes the work harder than its size suggests");
+    concerns.push("A thin description makes this harder than its size suggests");
   } else if (clarity === "high") {
     hardness -= 0.08;
   }
@@ -54,7 +54,7 @@ export function estimateDifficulty(input: {
   // Unfamiliar technology is difficulty, not just a skill-match penalty.
   if (skills.unfamiliar.length >= 3) {
     hardness += 0.12;
-    concerns.push("Several parts of the stack would be new to you");
+    concerns.push("Several parts of the stack are new to you");
   } else if (skills.matched.length >= 2) {
     hardness -= 0.08;
   }
@@ -66,7 +66,7 @@ export function estimateDifficulty(input: {
 
   if (hasBeginnerLabel(labels)) {
     hardness -= 0.12;
-    reasons.push("Maintainers have marked the issue as approachable for a first contribution");
+    reasons.push("Maintainers marked it as approachable");
   }
   if (hasHardLabel(labels)) {
     hardness += 0.15;
@@ -78,20 +78,20 @@ export function estimateDifficulty(input: {
     hardness += 0.1;
   } else if (bytes > 0 && bytes < 2_000_000) {
     hardness -= 0.05;
-    reasons.push("The codebase is small enough to get oriented in quickly");
+    reasons.push("The codebase is small enough to learn quickly");
   }
 
   if (!repo.hasContributingGuide) {
     hardness += 0.05;
-    concerns.push("There is no contributing guide, so local setup may take some working out");
+    concerns.push("No contributing guide, so setup is on you to work out");
   }
 
   const difficulty: Difficulty = hardness <= 0.34 ? "easy" : hardness <= 0.62 ? "medium" : "hard";
 
   if (difficulty === "easy") {
-    reasons.push("The work appears self-contained and approachable");
+    reasons.push("The work is self-contained");
   } else if (difficulty === "hard") {
-    concerns.push("This appears to need real familiarity with the codebase before starting");
+    concerns.push("You need to know this codebase before starting");
   }
 
   return { difficulty, reasons, concerns };
@@ -115,17 +115,17 @@ export function analyzeDifficultyFit(input: {
       score: UNCLEAR_DIFFICULTY_SCORE,
       confidence: "low",
       reasons: [],
-      concerns: ["Difficulty could not be estimated from the issue"],
+      concerns: ["The issue says too little to judge difficulty"],
     };
   }
 
   const experienceFit = EXPERIENCE_DIFFICULTY_FIT[profile.experienceLevel][difficulty];
 
   if (experienceFit >= 0.9) {
-    reasons.push(`The estimated difficulty (${difficulty}) suits your stated experience level`);
+    reasons.push(`${capitalise(difficulty)} work, which suits your experience`);
   } else if (experienceFit <= 0.3) {
     concerns.push(
-      `This looks ${difficulty} for someone at your stated experience level, so expect to spend time reading before writing`,
+      `${capitalise(difficulty)} for your experience level, so expect to read before you write`,
     );
   }
 
@@ -136,17 +136,17 @@ export function analyzeDifficultyFit(input: {
     if (estimatedHours.max <= budget.max) {
       timeFit = 1;
       reasons.push(
-        `Estimated at ${estimatedHours.min}-${estimatedHours.max} hours, which fits the time you said you have`,
+        `${estimatedHours.min} to ${estimatedHours.max} hours, which fits the time you have`,
       );
     } else if (estimatedHours.min <= budget.max) {
       timeFit = 0.65;
       reasons.push(
-        `Estimated at ${estimatedHours.min}-${estimatedHours.max} hours, so it may run past your usual session`,
+        `${estimatedHours.min} to ${estimatedHours.max} hours, so it may run past one sitting`,
       );
     } else {
       timeFit = 0.25;
       concerns.push(
-        `Estimated at ${estimatedHours.min}-${estimatedHours.max} hours, which is more than the time you said you have available`,
+        `${estimatedHours.min} to ${estimatedHours.max} hours, more than the time you said you have`,
       );
     }
   }
@@ -157,4 +157,8 @@ export function analyzeDifficultyFit(input: {
     reasons,
     concerns,
   };
+}
+
+function capitalise(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }

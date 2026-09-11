@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUpRight, Bookmark, BookmarkCheck, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -43,14 +44,24 @@ export function OpportunityActions({
         href={issueUrl}
         target="_blank"
         rel="noreferrer"
-        className="inline-flex items-center rounded-md bg-ink px-3 py-1.5 text-sm font-medium text-canvas transition hover:opacity-90"
+        className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-1.5 text-sm font-medium text-canvas transition-colors duration-100 hover:bg-ink/88"
       >
-        Open on GitHub ↗
+        Take it on GitHub
+        <span className="sr-only">(opens in a new tab)</span>
+        <ArrowUpRight size={14} strokeWidth={2} aria-hidden />
       </a>
-      <Button onClick={toggleSave} disabled={busy}>
-        {saved ? "Saved" : "Save"}
+
+      <Button variant={saved ? "active" : "secondary"} onClick={toggleSave} aria-pressed={saved} disabled={busy}>
+        {saved ? (
+          <BookmarkCheck size={14} strokeWidth={2} aria-hidden />
+        ) : (
+          <Bookmark size={14} strokeWidth={2} aria-hidden />
+        )}
+        {saved ? "Saved" : "Save for later"}
       </Button>
+
       <Button variant="ghost" onClick={dismiss} disabled={busy}>
+        <X size={14} strokeWidth={2} aria-hidden />
         Not for me
       </Button>
     </div>

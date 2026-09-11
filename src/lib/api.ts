@@ -19,7 +19,7 @@ export function error(message: string, status: number): NextResponse {
   return NextResponse.json({ error: message }, { status });
 }
 
-export const unauthorized = () => error("Sign in with GitHub to use this endpoint", 401);
+export const unauthorized = () => error("Sign in with GitHub first", 401);
 export const notFound = (what = "Not found") => error(what, 404);
 
 /**
@@ -37,10 +37,10 @@ export async function withUser(
     return await handler(userId);
   } catch (caught) {
     if (caught instanceof Error && caught.name === "RateLimitError") {
-      return error("GitHub's rate limit is exhausted. Try again shortly.", 503);
+      return error("GitHub has run out of requests for now. Try again shortly.", 503);
     }
     console.error("Route handler failed", caught);
-    return error("Something went wrong", 500);
+    return error("Something broke on our end", 500);
   }
 }
 
@@ -53,7 +53,7 @@ export async function parseBody<T>(
   try {
     raw = await request.json();
   } catch {
-    return { response: error("Expected a JSON body", 400) };
+    return { response: error("That request needs a JSON body", 400) };
   }
 
   const parsed = schema.safeParse(raw);

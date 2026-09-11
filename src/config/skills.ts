@@ -102,29 +102,29 @@ export const INTERESTS = [
 ] as const;
 
 export const CONTRIBUTION_TYPES: { value: ContributionType; label: string; hint: string }[] = [
-  { value: "features", label: "Features", hint: "New behaviour, usually the largest scope" },
-  { value: "bug-fixes", label: "Bug fixes", hint: "Reproducible problems with a known expectation" },
-  { value: "ui-ux", label: "UI/UX", hint: "Interface, interaction and visual work" },
-  { value: "documentation", label: "Documentation", hint: "Guides, references, examples" },
-  { value: "tests", label: "Tests", hint: "Coverage, regression tests, test infrastructure" },
-  { value: "tooling", label: "Developer tooling", hint: "Build, lint, CI, release automation" },
+  { value: "features", label: "Features", hint: "New behaviour, usually the biggest job" },
+  { value: "bug-fixes", label: "Bug fixes", hint: "Something is broken and everyone agrees how" },
+  { value: "ui-ux", label: "Interface", hint: "Layout, interaction and visual work" },
+  { value: "documentation", label: "Documentation", hint: "Guides, references and examples" },
+  { value: "tests", label: "Tests", hint: "Coverage, regressions and test tooling" },
+  { value: "tooling", label: "Tooling", hint: "Build, lint, CI and releases" },
 ];
 
 export const EXPERIENCE_LEVELS: { value: ExperienceLevel; label: string; hint: string }[] = [
   {
     value: "beginner",
     label: "Beginner",
-    hint: "New to open source, or new to contributing in this stack",
+    hint: "New to this, or new to the stack",
   },
   {
     value: "intermediate",
     label: "Intermediate",
-    hint: "Comfortable reading an unfamiliar codebase",
+    hint: "You can find your way around strange code",
   },
   {
     value: "advanced",
     label: "Advanced",
-    hint: "Happy to take on architectural or ambiguous work",
+    hint: "Ambiguous or architectural work is fine",
   },
 ];
 

@@ -1,5 +1,5 @@
-import { PageSkeleton } from "@/components/skeleton";
+import { QueueSkeleton } from "@/components/skeleton";
 
 export default function Loading() {
-  return <PageSkeleton title="Tell Tracer what you know" cards={3} />;
+  return <QueueSkeleton title="Set up your profile" rows={3} />;
 }

@@ -91,8 +91,8 @@ function describeChange(
   if (stored.state === "open" && latest.state === "closed") {
     const merged = latest.linkedPullRequests.find((pr) => pr.merged);
     return merged
-      ? `Closed — pull request #${merged.number} was merged`
-      : "The issue has been closed";
+      ? `is closed. Pull request #${merged.number} was merged.`
+      : "is closed.";
   }
 
   const storedPullRequests = new Set(stored.linkedPullRequests.map((pr) => pr.number));
@@ -100,17 +100,17 @@ function describeChange(
     (pr) => !storedPullRequests.has(pr.number) && pr.state === "open",
   );
   if (newPullRequest) {
-    return `Pull request #${newPullRequest.number} now addresses this issue`;
+    return `has a pull request now (#${newPullRequest.number}).`;
   }
 
   const newAssignees = latest.assignees.filter((login) => !stored.assignees.includes(login));
   if (newAssignees.length > 0) {
-    return `Now assigned to ${newAssignees.map((login) => `@${login}`).join(", ")}`;
+    return `went to ${newAssignees.map((login) => `@${login}`).join(", ")}.`;
   }
 
   // A burst of discussion usually means the shape of the work changed.
   if (latest.commentCount - stored.commentCount >= 5) {
-    return `${latest.commentCount - stored.commentCount} new comments — the issue may have changed`;
+    return `picked up ${latest.commentCount - stored.commentCount} new comments, so it may have moved on.`;
   }
 
   return null;

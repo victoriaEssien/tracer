@@ -16,9 +16,9 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
           margin: "0 auto",
         }}
       >
-        <h1 style={{ fontSize: "1.125rem", fontWeight: 600 }}>Tracer failed to start</h1>
+        <h1 style={{ fontSize: "1.25rem", fontWeight: 600 }}>Tracer failed to start</h1>
         <p style={{ marginTop: "0.5rem", fontSize: "0.875rem", lineHeight: 1.6 }}>
-          Reload the page. If it keeps happening, the server logs will have the detail.
+          Reload the page. If it keeps happening, the server logs have the detail.
         </p>
         {error.digest ? (
           <p style={{ marginTop: "0.5rem", fontSize: "0.75rem", opacity: 0.6 }}>

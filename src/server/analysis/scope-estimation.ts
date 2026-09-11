@@ -62,42 +62,42 @@ export function estimateScope(
     size += 0.15 * Math.min(largeHits, 3);
     concerns.push(
       largeHits > 1
-        ? "The issue describes work that appears to span several parts of the codebase"
-        : "The issue mentions restructuring rather than a contained change",
+        ? "This spans several parts of the codebase"
+        : "This is restructuring, not a contained change",
     );
   }
 
   const smallHits = SMALL_PATTERNS.filter((pattern) => pattern.test(text)).length;
   if (smallHits > 0) {
     size -= 0.2 * Math.min(smallHits, 2);
-    reasons.push("The issue describes a contained, well-bounded change");
+    reasons.push("The change is contained");
   }
 
   // A long checklist is usually several changes wearing one issue as a coat.
   const checklistItems = (body.match(/^\s*-\s*\[[ x]\]/gm) ?? []).length;
   if (checklistItems >= 6) {
     size += 0.2;
-    concerns.push(`The issue contains a checklist of ${checklistItems} items`);
+    concerns.push(`There is a checklist of ${checklistItems} items`);
   } else if (checklistItems >= 2 && checklistItems <= 5) {
-    reasons.push(`The work is broken into ${checklistItems} listed steps`);
+    reasons.push(`Broken into ${checklistItems} steps`);
   }
 
   // Distinct file paths named in the issue is the strongest observable signal.
   const mentionedFiles = extractFilePaths(text);
   if (mentionedFiles.length === 1) {
     size -= 0.15;
-    reasons.push("The issue points at a single file");
+    reasons.push("It points at a single file");
   } else if (mentionedFiles.length >= 2 && mentionedFiles.length <= 4) {
     size -= 0.05;
-    reasons.push(`Relevant code appears to be contained in ${mentionedFiles.length} files`);
+    reasons.push(`The code looks contained to ${mentionedFiles.length} files`);
   } else if (mentionedFiles.length > 6) {
     size += 0.1;
-    concerns.push(`The issue references ${mentionedFiles.length} different files`);
+    concerns.push(`It touches ${mentionedFiles.length} different files`);
   }
 
   if (contributionTypes.includes("documentation")) {
     size -= 0.2;
-    reasons.push("Documentation changes are usually self-contained");
+    reasons.push("Documentation changes stay contained");
   }
   if (contributionTypes.includes("tests")) {
     size -= 0.1;
@@ -108,14 +108,14 @@ export function estimateScope(
   }
   if (hasHardLabel(labels)) {
     size += 0.15;
-    concerns.push("Maintainers have labelled the issue as complex or architectural");
+    concerns.push("Maintainers labelled it complex or architectural");
   }
 
   // Big codebases make any change take longer to find your way around.
   const repoBytes = Object.values(repo.languages).reduce((sum, bytes) => sum + bytes, 0);
   if (repoBytes > 20_000_000) {
     size += 0.08;
-    concerns.push("The repository is large, so orientation will take some of the time");
+    concerns.push("The repository is big, so finding your way takes time");
   }
 
   const discussionIsDesign = /\b(?:proposal|rfc|design doc|we should decide|two approaches)\b/i.test(
@@ -123,7 +123,7 @@ export function estimateScope(
   );
   if (discussionIsDesign) {
     size += 0.12;
-    concerns.push("The approach still appears to be under discussion");
+    concerns.push("The approach is still under discussion");
   }
 
   // Not enough to say anything honest.
@@ -136,7 +136,7 @@ export function estimateScope(
         score: 0.4,
         confidence: "low",
         reasons: [],
-        concerns: ["There is not enough detail in the issue to estimate how much work it is"],
+        concerns: ["Not enough detail to guess how big this is"],
       },
     };
   }

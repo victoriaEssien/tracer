@@ -23,17 +23,17 @@ export const DIMENSION_WEIGHTS: Record<ScoreDimension, number> = {
 };
 
 export const DIMENSION_LABELS: Record<ScoreDimension, string> = {
-  skillMatch: "Skill match",
-  issueSuitability: "Issue suitability",
-  repositoryHealth: "Repository health",
+  skillMatch: "Your stack",
+  issueSuitability: "Actually free",
+  repositoryHealth: "Project health",
   issueClarity: "Issue clarity",
-  difficultyFit: "Difficulty fit",
-  learningOpportunity: "Learning opportunity",
-  maintainerActivity: "Maintainer activity",
-  competition: "Competition and activity",
+  difficultyFit: "Your time",
+  learningOpportunity: "Learning",
+  maintainerActivity: "Maintainers",
+  competition: "Competition",
 };
 
-/** Score boundaries. The verdict is not a pure function of these — see below. */
+/** Score boundaries. The verdict is not a pure function of these, see below. */
 export const VERDICT_THRESHOLDS = {
   recommended: 75,
   possible: 55,

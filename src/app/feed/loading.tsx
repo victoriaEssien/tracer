@@ -1,5 +1,5 @@
-import { PageSkeleton } from "@/components/skeleton";
+import { QueueSkeleton } from "@/components/skeleton";
 
 export default function Loading() {
-  return <PageSkeleton title="Feed" />;
+  return <QueueSkeleton title="Your queue" />;
 }

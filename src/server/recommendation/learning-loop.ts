@@ -93,20 +93,20 @@ export function learnPreferences(events: LearningEvent[]): LearnedPreferences {
     if (Math.abs(adjustment) >= LEARNING_LOOP.maxAdjustment * 0.6) {
       observations.push(
         adjustment > 0
-          ? `${DIMENSION_LABELS[dimension]} counts for a little more than default, because it is high on the issues you save`
-          : `${DIMENSION_LABELS[dimension]} counts for a little less than default, based on what you have dismissed`,
+          ? `${DIMENSION_LABELS[dimension]} counts for more now, because it is high on what you save`
+          : `${DIMENSION_LABELS[dimension]} counts for less now, based on what you have hidden`,
       );
     }
   }
 
   const favouredTechnologies = countFavoured(decisive);
   if (favouredTechnologies.length > 0) {
-    observations.push(`You keep saving ${favouredTechnologies.slice(0, 3).join(", ")} issues`);
+    observations.push(`You keep saving ${favouredTechnologies.slice(0, 3).join(", ")} work`);
   }
 
   const favouredDifficulty = mostSavedDifficulty(decisive);
   if (favouredDifficulty) {
-    observations.push(`Most of what you save is estimated as ${favouredDifficulty}`);
+    observations.push(`Most of what you save is ${favouredDifficulty}`);
   }
 
   return {

@@ -37,7 +37,7 @@ export function decideVerdict(
   if (availability === "closed") {
     return {
       verdict: "not-recommended",
-      summary: "This issue is no longer open.",
+      summary: "This one is closed.",
     };
   }
   if (availability === "has-pull-request" || availability === "assigned") {
@@ -78,43 +78,47 @@ function summarize(verdict: Verdict, analysis: OpportunityAnalysis): string {
   const availability = analysis.status.availability;
 
   if (availability === "has-pull-request") {
-    return `Someone has already opened a pull request for this (#${analysis.status.openPullRequestNumber}).`;
+    return `Pull request #${analysis.status.openPullRequestNumber} is already doing this.`;
   }
   if (availability === "assigned") {
-    return `This is already assigned to ${analysis.status.assignees.map((login) => `@${login}`).join(", ")}.`;
+    return `Already assigned to ${analysis.status.assignees.map((login) => `@${login}`).join(", ")}.`;
   }
   if (availability === "likely-claimed") {
-    return "Someone appears to have claimed this in the comments, so check before starting.";
+    return "Someone called it in the comments. Ask before you start.";
   }
 
   const hours = analysis.estimatedHours ? formatHours(analysis.estimatedHours) : null;
 
   if (verdict === "recommended") {
     const pieces = [
-      `The stack matches what you know`,
-      analysis.clarity === "high" ? "the issue is clearly specified" : null,
-      hours ? `and it is estimated at ${hours}` : null,
+      "The stack is yours",
+      analysis.clarity === "high" ? "the issue says what it wants" : null,
+      hours ? `and it looks like ${hours}` : null,
     ].filter(Boolean);
-    return `You should probably take this one. ${pieces.join(", ")}.`;
+    return `${pieces.join(", ")}.`;
   }
 
   if (verdict === "possible") {
     const caveat =
       analysis.scope === "unclear"
-        ? "the scope is not clear enough to be sure how big it is"
+        ? "there is no telling how big it is from what the issue says"
         : analysis.clarity === "low"
-          ? "the issue does not say much about what finished looks like"
+          ? "the issue never says what finished looks like"
           : availability === "stale"
-            ? "it has been quiet for a long time, so it may no longer be wanted"
-            : "some parts of it are outside what you have worked with";
-    return `Worth considering, but ${caveat}.`;
+            ? "it has been quiet long enough that nobody may want it now"
+            : "parts of the stack are new to you";
+    return `Worth a look, but ${caveat}.`;
   }
 
   const reason =
     availability === "stale"
-      ? "it has been inactive long enough that it may no longer be wanted"
+      ? "it has been dead long enough that nobody may want it now"
       : analysis.difficulty === "hard"
-        ? "it appears substantially harder than the work you said you have time for"
-        : "the match with your skills and available time is weak";
-  return `Probably skip this one — ${reason}.`;
+        ? "it is harder than the time you said you have"
+        : "it does not match your skills or your time";
+  return `Skip it. ${capitalise(reason)}.`;
+}
+
+function capitalise(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }

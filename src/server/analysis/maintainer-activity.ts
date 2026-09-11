@@ -36,15 +36,15 @@ export function analyzeMaintainerActivity(
   if (responseHours !== null) {
     if (responseHours <= 48) {
       reasons.push(
-        `Maintainers responded to recent pull requests within about ${Math.round(responseHours)} hours, based on repository history`,
+        `Maintainers reply to pull requests in about ${Math.round(responseHours)} hours`,
       );
     } else if (responseHours <= 168) {
       reasons.push(
-        `Recent pull requests appear to get a first response within roughly ${Math.round(responseHours / 24)} days`,
+        `Pull requests get a first reply in about ${Math.round(responseHours / 24)} days`,
       );
     } else {
       concerns.push(
-        `A first response to a pull request has recently taken around ${Math.round(responseHours / 24)} days`,
+        `A first reply to a pull request takes about ${Math.round(responseHours / 24)} days here`,
       );
     }
   }
@@ -63,11 +63,11 @@ export function analyzeMaintainerActivity(
 
   if (mergeHours !== null && mergeHours > 720) {
     concerns.push(
-      `Recently merged pull requests took a median of about ${Math.round(mergeHours / 24)} days to merge`,
+      `Pull requests take about ${Math.round(mergeHours / 24)} days to merge`,
     );
   } else if (mergeHours !== null && mergeHours <= 168) {
     reasons.push(
-      `Recent pull requests were merged in a median of about ${Math.round(mergeHours / 24) || 1} days`,
+      `Pull requests merge in about ${Math.round(mergeHours / 24) || 1} days`,
     );
   }
 
@@ -80,15 +80,15 @@ export function analyzeMaintainerActivity(
   if (maintainerOnIssue) {
     const latest = maintainerComments[maintainerComments.length - 1];
     reasons.push(
-      `A maintainer has commented on this issue (${daysSince(latest.createdAt)} days ago)`,
+      `A maintainer commented on this issue ${daysSince(latest.createdAt)} days ago`,
     );
   } else if (issue.commentCount > 3) {
-    concerns.push("The issue has discussion but no visible maintainer response");
+    concerns.push("People are talking here and no maintainer has answered");
   }
 
   const issueIsFromMaintainer = MAINTAINER_ASSOCIATIONS.has(issue.authorAssociation ?? "");
   if (issueIsFromMaintainer) {
-    reasons.push("The issue was opened by a maintainer, so the work is likely wanted");
+    reasons.push("A maintainer opened it, so the work is wanted");
   }
 
   // Blend what we know. Missing signals are skipped rather than scored as zero.
@@ -109,7 +109,7 @@ export function analyzeMaintainerActivity(
         : "medium";
 
   if (confidence === "low") {
-    concerns.push("There is not enough recent pull request history to estimate responsiveness");
+    concerns.push("Too little history to tell how fast maintainers reply");
   }
 
   return { score, confidence, reasons, concerns };

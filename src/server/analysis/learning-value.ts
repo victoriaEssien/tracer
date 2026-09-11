@@ -45,9 +45,7 @@ export function analyzeLearningValue(input: {
   const goalMatches = skills.learning;
   if (goalMatches.length > 0) {
     score += clamp(goalMatches.length / goals.length) * 0.5;
-    reasons.push(
-      `Uses ${goalMatches.join(", ")}, which you said you want to improve`,
-    );
+    reasons.push(`Uses ${goalMatches.join(", ")}, which you want to get better at`);
   }
 
   // Learning goals can also be practices rather than technologies: "testing",
@@ -59,13 +57,13 @@ export function analyzeLearningValue(input: {
   );
   if (practiceGoals.length > 0) {
     score += 0.15;
-    reasons.push(`The work itself is ${practiceGoals.join(" and ")}, which is on your list`);
+    reasons.push(`The work is ${practiceGoals.join(" and ")}, which is on your list`);
   }
 
   // A project you can learn from needs to be readable and willing to teach.
   if (repo.hasContributingGuide) {
     score += 0.1;
-    reasons.push("A contributing guide makes this a friendlier place to learn");
+    reasons.push("A contributing guide makes this an easier place to learn");
   }
   if (repo.activity.recentContributorCount >= 5) {
     score += 0.05;
@@ -77,9 +75,7 @@ export function analyzeLearningValue(input: {
 
   // Learning in a project that never merges outside work is not learning much.
   if (repo.activity.externalPullRequestsMergedLast90Days === 0 && goalMatches.length > 0) {
-    concerns.push(
-      "It would be a good place to practise, but outside contributions do not appear to be landing",
-    );
+    concerns.push("Good place to practise, but outside work is not landing here");
   }
 
   return {

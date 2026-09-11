@@ -1,55 +1,54 @@
 @import "tailwindcss";
 
 /**
- * Tracer's surface is deliberately quiet. The product's job is to make one
- * decision easier, so colour is reserved for the three things that carry
- * meaning: the verdict, the score, and the difference between an observed fact
- * and an inference.
+ * Tracer's visual world: an instrument for deciding. See DESIGN.md.
  *
- * Palette values live on `:root` so the dark scheme can override them; the
- * `@theme inline` block below turns each one into a Tailwind utility
- * (`bg-surface`, `text-ink-soft`, `border-line`, ...) that follows the override.
+ * Warm paper neutrals so the surface reads as a document rather than dashboard
+ * chrome, and one brand accent that is deliberately not a verdict colour, so
+ * colour carrying meaning is never confused with colour carrying identity.
  */
 
 :root {
-  --canvas: #fbfbfa;
+  --canvas: #faf9f7;
   --surface: #ffffff;
-  --raised: #f4f4f2;
-  --line: #e5e4e0;
-  --ink: #1a1a19;
-  --ink-soft: #5c5b57;
-  --ink-faint: #8f8e89;
+  --raised: #f2f0ec;
+  --line: #e4e1da;
+  --line-strong: #d5d1c8;
+  --ink: #191817;
+  --ink-soft: #575450;
+  --ink-faint: #6f6c66;
 
-  --accent: #1f5f4b;
-  --accent-soft: #e6f0ec;
+  --accent: #1b4ea8;
+  --accent-soft: #e8eefa;
 
-  --good: #1f7a4d;
-  --good-soft: #e7f3ec;
-  --warn: #8a5a12;
-  --warn-soft: #f8f0e0;
-  --bad: #9b3b32;
-  --bad-soft: #f7eae8;
+  --good: #1a6b3c;
+  --good-soft: #e6f1ea;
+  --warn: #8a5410;
+  --warn-soft: #f7efe2;
+  --bad: #9c3025;
+  --bad-soft: #f8eae7;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --canvas: #111211;
-    --surface: #181a19;
-    --raised: #202322;
-    --line: #2c302e;
-    --ink: #ecebe7;
-    --ink-soft: #a5a49e;
-    --ink-faint: #77766f;
+    --canvas: #0f1011;
+    --surface: #17191a;
+    --raised: #212425;
+    --line: #2b2f30;
+    --line-strong: #3a3f40;
+    --ink: #eceae5;
+    --ink-soft: #a3a09a;
+    --ink-faint: #8d8a82;
 
-    --accent: #6fd3a8;
-    --accent-soft: #17251f;
+    --accent: #8fb3ff;
+    --accent-soft: #16213a;
 
-    --good: #6fd3a8;
-    --good-soft: #16251e;
-    --warn: #dcb46a;
-    --warn-soft: #24201a;
-    --bad: #e08a80;
-    --bad-soft: #261a19;
+    --good: #63c58d;
+    --good-soft: #14251c;
+    --warn: #dda94f;
+    --warn-soft: #261f13;
+    --bad: #e28b7f;
+    --bad-soft: #2a1a17;
   }
 }
 
@@ -58,6 +57,7 @@
   --color-surface: var(--surface);
   --color-raised: var(--raised);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-ink-faint: var(--ink-faint);
@@ -72,9 +72,10 @@
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
 
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  /* Bound to next/font in layout.tsx, which self-hosts and preloads them. */
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, Menlo, monospace;
 }
 
 html {
@@ -84,7 +85,9 @@ html {
 body {
   background: var(--canvas);
   color: var(--ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /**
@@ -95,7 +98,39 @@ body {
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 3px;
+}
+
+/* Surfaces the browser draws for us still belong to the design. */
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+:root {
+  accent-color: var(--accent);
+  caret-color: var(--accent);
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border: 3px solid var(--canvas);
+  border-radius: 999px;
+}
+
+a {
+  text-underline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -105,42 +140,54 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
 
-::selection {
-  background: var(--accent-soft);
-  color: var(--accent);
+/**
+ * The one authored moment: a score meter fills as its row settles, so the
+ * ranking is legible as the list arrives. It plays once and never repeats.
+ */
+@keyframes meter-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.meter-fill {
+  transform-origin: left center;
+  animation: meter-fill 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Issue bodies come from GitHub as markdown. These rules style the rendered
    output; the renderer itself escapes any HTML the author wrote. */
 .issue-body {
-  font-size: 0.875rem;
-  line-height: 1.7;
+  font-size: 0.9375rem;
+  line-height: 1.75;
   color: var(--ink-soft);
+  max-width: 70ch;
   word-break: break-word;
 }
 
 .issue-body > * + * {
-  margin-top: 0.75rem;
+  margin-top: 0.85rem;
 }
 
 .issue-body h1,
 .issue-body h2,
 .issue-body h3,
 .issue-body h4 {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--ink);
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .issue-body a {
   color: var(--accent);
   text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 .issue-body ul,
@@ -162,15 +209,15 @@ body {
   font-size: 0.8125rem;
   background: var(--raised);
   padding: 0.1em 0.35em;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .issue-body pre {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   background: var(--raised);
-  padding: 0.75rem;
-  border-radius: 6px;
+  padding: 0.85rem;
+  border-radius: 4px;
   overflow-x: auto;
 }
 
@@ -180,15 +227,15 @@ body {
 }
 
 .issue-body blockquote {
-  border-left: 2px solid var(--line);
-  padding-left: 0.75rem;
+  border-left: 1px solid var(--line-strong);
+  padding-left: 0.85rem;
   color: var(--ink-faint);
 }
 
 .issue-body img {
   max-width: 100%;
   height: auto;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 .issue-body table {

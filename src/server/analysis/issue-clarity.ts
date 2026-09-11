@@ -64,7 +64,7 @@ export function analyzeIssueClarity(issue: CollectedIssue): {
         score: 0.08,
         confidence: "high",
         reasons: [],
-        concerns: ["The issue has a title but no description"],
+        concerns: ["A title and nothing else"],
       },
     };
   }
@@ -76,37 +76,37 @@ export function analyzeIssueClarity(issue: CollectedIssue): {
   score += lengthScore * 0.2;
 
   if (body.length < 120) {
-    concerns.push("The description is only a couple of sentences long");
+    concerns.push("The description is two sentences");
   }
 
   const hasReproduction = REPRODUCTION_PATTERNS.some((pattern) => pattern.test(body));
   if (hasReproduction) {
     score += 0.18;
-    reasons.push("The issue includes steps to reproduce");
+    reasons.push("It gives steps to reproduce");
   }
 
   const hasExpected = EXPECTED_BEHAVIOUR_PATTERNS.some((pattern) => pattern.test(body));
   if (hasExpected) {
     score += 0.16;
-    reasons.push("The issue states what the expected behaviour is");
+    reasons.push("It says what should happen instead");
   }
 
   const hasAcceptance = ACCEPTANCE_PATTERNS.some((pattern) => pattern.test(body));
   if (hasAcceptance) {
     score += 0.16;
-    reasons.push("The issue lists acceptance criteria or a task breakdown");
+    reasons.push("It lists what counts as done");
   }
 
   const hasCode = /```/.test(body) || /`[^`\n]{3,}`/.test(body);
   if (hasCode) {
     score += 0.1;
-    reasons.push("The issue includes code or output, not just prose");
+    reasons.push("It includes code or output, not just prose");
   }
 
   const hasFileReference = /`?[\w./-]+\/[\w.-]+\.[a-z]{1,5}`?/.test(body);
   if (hasFileReference) {
     score += 0.08;
-    reasons.push("The issue points at specific files or paths");
+    reasons.push("It points at specific files");
   }
 
   if (ENVIRONMENT_PATTERNS.some((pattern) => pattern.test(body))) {
@@ -116,7 +116,7 @@ export function analyzeIssueClarity(issue: CollectedIssue): {
   const hasImage = /!\[[^\]]*\]\(/.test(body) || /<img\b/i.test(body);
   if (hasImage) {
     score += 0.04;
-    reasons.push("The issue includes a screenshot or recording");
+    reasons.push("There is a screenshot or recording");
   }
 
   // Maintainer follow-up can rescue a thin description.
@@ -126,23 +126,23 @@ export function analyzeIssueClarity(issue: CollectedIssue): {
   );
   if (maintainerDetail.length > 0) {
     score += 0.12;
-    reasons.push("A maintainer has added detail in the comments");
+    reasons.push("A maintainer filled in the gaps in the comments");
   }
 
   // Unresolved questions cut the other way.
   const openQuestions = /\b(?:what do you think|thoughts\?|not sure (?:how|whether|if)|we need to decide|open question)\b/i;
   if (openQuestions.test(text)) {
     score -= 0.12;
-    concerns.push("The discussion contains unresolved questions about the approach");
+    concerns.push("The approach is still being argued about");
   }
 
   if (VAGUE_PATTERNS.some((pattern) => pattern.test(body))) {
     score -= 0.1;
-    concerns.push("The description states the problem but not what the fix should look like");
+    concerns.push("It describes the problem but not the fix");
   }
 
   if (!hasAcceptance && !hasExpected) {
-    concerns.push("The issue does not spell out what finished would look like");
+    concerns.push("Nobody has said what finished looks like");
   }
 
   const finalScore = clamp(score);

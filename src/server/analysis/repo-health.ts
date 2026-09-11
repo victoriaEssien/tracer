@@ -18,7 +18,7 @@ export function analyzeRepositoryHealth(repo: CollectedRepository): Signal {
       score: 0,
       confidence: "high",
       reasons: [],
-      concerns: ["The repository is archived and no longer accepts contributions"],
+      concerns: ["Archived. It does not take contributions any more."],
     };
   }
 
@@ -39,13 +39,13 @@ export function analyzeRepositoryHealth(repo: CollectedRepository): Signal {
             : 0.1;
 
   if (daysSinceCommit <= 14) {
-    reasons.push("The repository was committed to within the last two weeks");
+    reasons.push("Someone committed in the last two weeks");
   } else if (daysSinceCommit <= 60) {
-    reasons.push(`Last commit was about ${daysSinceCommit} days ago`);
+    reasons.push(`Last commit was ${daysSinceCommit} days ago`);
   } else if (daysSinceCommit <= 180) {
-    concerns.push(`The last commit appears to be about ${daysSinceCommit} days ago`);
+    concerns.push(`Nothing committed for ${daysSinceCommit} days`);
   } else {
-    concerns.push("There has been no commit activity for over six months");
+    concerns.push("No commits for over six months");
   }
 
   // Volume: 40 commits a quarter is a healthy, steadily maintained project.
@@ -53,29 +53,29 @@ export function analyzeRepositoryHealth(repo: CollectedRepository): Signal {
   if (activity.commitsLast90Days >= 30) {
     reasons.push(`${activity.commitsLast90Days} commits in the last 90 days`);
   } else if (activity.commitsLast90Days <= 3 && daysSinceCommit > 30) {
-    concerns.push("Commit activity over the last quarter appears low");
+    concerns.push("Barely any commits this quarter");
   }
 
   const releases = activity.releasesLast12Months;
   const releaseCadence = releases > 0 ? clamp(0.5 + ratio(releases, 6) * 0.5) : 0.35;
   if (releases >= 4) {
-    reasons.push(`${releases} releases published in the last year`);
+    reasons.push(`${releases} releases in the last year`);
   } else if (releases === 0 && activity.lastReleaseAt) {
-    concerns.push("No release has been published in the last year");
+    concerns.push("No release in the last year");
   }
 
   // Throughput: are outside contributions actually being merged?
   const throughput = ratio(activity.pullRequestsMergedLast90Days, 15);
   if (activity.externalPullRequestsMergedLast90Days >= 3) {
     reasons.push(
-      `${activity.externalPullRequestsMergedLast90Days} pull requests from outside contributors were merged in the last 90 days`,
+      `${activity.externalPullRequestsMergedLast90Days} outside pull requests merged in the last 90 days`,
     );
   } else if (
     activity.pullRequestsOpenedLast90Days >= 5 &&
     activity.externalPullRequestsMergedLast90Days === 0
   ) {
     concerns.push(
-      "No outside pull requests appear to have been merged in the last 90 days, despite recent submissions",
+      "People open pull requests here, but none from outside have merged in 90 days",
     );
   }
 
@@ -84,25 +84,25 @@ export function analyzeRepositoryHealth(repo: CollectedRepository): Signal {
   const backlog = 1 - clamp(staleRatio);
   if (activity.stalePullRequests >= 5 && staleRatio > 0.5) {
     concerns.push(
-      `${activity.stalePullRequests} open pull requests have been waiting for more than 90 days`,
+      `${activity.stalePullRequests} pull requests have been waiting over 90 days`,
     );
   }
 
   const contributors = ratio(activity.recentContributorCount, 8);
   if (activity.recentContributorCount >= 5) {
     reasons.push(
-      `${activity.recentContributorCount} people have committed in the last 90 days, so the project is not a single-maintainer project`,
+      `${activity.recentContributorCount} people committed in the last 90 days, so it is not one person`,
     );
   } else if (activity.recentContributorCount <= 1) {
-    concerns.push("Recent commits appear to come from a single person");
+    concerns.push("Every recent commit is from the same person");
   }
 
   if (repo.hasContributingGuide) {
-    reasons.push("The repository has a contributing guide");
+    reasons.push("There is a contributing guide");
   }
 
   if (repo.isFork) {
-    concerns.push("This repository is a fork, which may not be where work is expected to land");
+    concerns.push("This is a fork, so the work may not belong here");
   }
 
   const score = clamp(

@@ -77,7 +77,7 @@ export function analyzeIssueStatus(
         reasons: [],
         concerns: [
           mergedPullRequest
-            ? `A pull request for this issue (#${mergedPullRequest.number}) has already been merged`
+            ? `Pull request #${mergedPullRequest.number} already did this`
             : "The issue is closed",
         ],
       },
@@ -89,68 +89,64 @@ export function analyzeIssueStatus(
   if (openPullRequest) {
     detail.availability = "has-pull-request";
     score = 0.1;
-    concerns.push(
-      `Pull request #${openPullRequest.number} already appears to address this issue`,
-    );
+    concerns.push(`Pull request #${openPullRequest.number} is already doing this`);
   } else if (issue.assignees.length > 0) {
     detail.availability = "assigned";
     score = 0.15;
     concerns.push(
-      `The issue is assigned to ${issue.assignees.map((login) => `@${login}`).join(", ")}`,
+      `Assigned to ${issue.assignees.map((login) => `@${login}`).join(", ")}`,
     );
   } else if (claim && daysSince(claim.createdAt, now) <= 30) {
     detail.availability = "likely-claimed";
     score = 0.3;
     concerns.push(
-      `@${claim.author ?? "someone"} said they were picking this up ${daysSince(claim.createdAt, now)} days ago, though nobody was formally assigned`,
+      `@${claim.author ?? "someone"} called it ${daysSince(claim.createdAt, now)} days ago, without being assigned`,
     );
   } else if (claim) {
     // An old, unfulfilled claim is worth knowing about but not disqualifying.
     score = 0.6;
     concerns.push(
-      `@${claim.author ?? "someone"} offered to take this ${daysSince(claim.createdAt, now)} days ago and nothing appears to have landed — worth asking before starting`,
+      `@${claim.author ?? "someone"} called it ${daysSince(claim.createdAt, now)} days ago and nothing landed. Ask before you start.`,
     );
   }
 
   if (hasClaimedLabel(labels) && detail.availability === "available") {
     detail.availability = "likely-claimed";
     score = Math.min(score, 0.3);
-    concerns.push("A label suggests the issue is already being worked on");
+    concerns.push("A label says someone is already on it");
   }
 
   if (hasBlockedLabel(labels)) {
     score = Math.min(score, 0.35);
-    concerns.push(
-      "A label suggests the issue is still being discussed or is waiting on more information",
-    );
+    concerns.push("A label says it is still being discussed");
   }
 
   // Staleness. An issue nobody has touched in a year may no longer be wanted.
   if (daysSinceUpdate > 365) {
     if (detail.availability === "available") detail.availability = "stale";
     score = Math.min(score, 0.3);
-    concerns.push(`The issue has been inactive for about ${Math.round(daysSinceUpdate / 30)} months`);
+    concerns.push(`Nothing has happened here for ${Math.round(daysSinceUpdate / 30)} months`);
   } else if (daysSinceUpdate > 180) {
     if (detail.availability === "available") detail.availability = "stale";
     score = Math.min(score, 0.5);
-    concerns.push(`The issue has been inactive for about ${Math.round(daysSinceUpdate / 30)} months`);
+    concerns.push(`Nothing has happened here for ${Math.round(daysSinceUpdate / 30)} months`);
   } else if (daysSinceUpdate <= 30 && detail.availability === "available") {
     score += 0.1;
-    reasons.push("The issue has been active in the last month");
+    reasons.push("Active in the last month");
   }
 
   if (detail.availability === "available") {
-    reasons.push("Nobody is assigned and no pull request references the issue");
+    reasons.push("Nobody is assigned and no pull request touches it");
   }
 
   if (hasHelpWantedLabel(labels)) {
     score += 0.1;
-    reasons.push("Maintainers have labelled the issue as wanting outside help");
+    reasons.push("Maintainers labelled it as wanting outside help");
   }
 
   if (detail.hasMaintainerGuidance) {
     score += 0.1;
-    reasons.push("A maintainer has given guidance on the issue about how to approach it");
+    reasons.push("A maintainer said how to approach it");
   }
 
   return {
@@ -188,18 +184,16 @@ export function analyzeCompetition(issue: CollectedIssue, now = new Date()): Sig
 
   if (claimants.size >= 2) {
     score = 0.15;
-    concerns.push(
-      `${claimants.size} people have offered to work on this in the last 90 days`,
-    );
+    concerns.push(`${claimants.size} people called it in the last 90 days`);
   } else if (claimants.size === 1) {
     score = 0.4;
-    concerns.push("Someone else has already offered to work on this");
+    concerns.push("Someone else already called it");
   }
 
   if (issue.commentCount >= 25) {
     score = Math.min(score, 0.4);
     concerns.push(
-      `The issue has ${issue.commentCount} comments, so there is a lot of context to read before starting`,
+      `${issue.commentCount} comments to read before you can start`,
     );
   } else if (issue.commentCount >= 12) {
     score = Math.min(score, 0.65);
@@ -208,16 +202,16 @@ export function analyzeCompetition(issue: CollectedIssue, now = new Date()): Sig
   if (issue.reactionCount >= 20) {
     score = Math.min(score, 0.7);
     concerns.push(
-      `${issue.reactionCount} reactions suggests this is a popular issue that others may also be attempting`,
+      `${issue.reactionCount} reactions, so others are probably looking at it too`,
     );
   }
 
   if (claimants.size === 0 && issue.commentCount <= 3) {
-    reasons.push("No one else appears to be working on this");
+    reasons.push("Nobody else is on it");
   }
 
   if (participants <= 2 && issue.commentCount > 0) {
-    reasons.push("The discussion is small enough to read in a few minutes");
+    reasons.push("The discussion takes a few minutes to read");
   }
 
   return {

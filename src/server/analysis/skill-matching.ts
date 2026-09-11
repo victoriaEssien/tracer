@@ -62,11 +62,11 @@ export function analyzeSkillMatch(
   const primaryScore = knowsPrimary ? 1 : learningPrimary ? 0.6 : primary ? 0.15 : 0.5;
 
   if (knowsPrimary && primary) {
-    reasons.push(`Written in ${primary}, which you have listed as experience`);
+    reasons.push(`Written in ${primary}, which you know`);
   } else if (learningPrimary && primary) {
-    reasons.push(`Written in ${primary}, which you said you want to improve`);
+    reasons.push(`Written in ${primary}, which you want to get better at`);
   } else if (primary) {
-    concerns.push(`The project is mainly ${primary}, which is not on your skill list`);
+    concerns.push(`Mainly ${primary}, which is not on your list`);
   }
 
   // Coverage across the rest of the stack.
@@ -85,15 +85,15 @@ export function analyzeSkillMatch(
     (tech) => !primary || tech.toLowerCase() !== primary.toLowerCase(),
   );
   if (otherMatches.length > 0) {
-    reasons.push(`Also uses ${formatList(otherMatches)}, which you know`);
+    reasons.push(`Also uses ${formatList(otherMatches)}`);
   }
   if (unfamiliar.length > 2) {
-    concerns.push(`The stack also includes ${formatList(unfamiliar.slice(0, 3))}, which you have not listed`);
+    concerns.push(`The stack also has ${formatList(unfamiliar.slice(0, 3))}, which you have not listed`);
   }
 
   const interestScore = matchedInterests.length > 0 ? clamp(0.6 + matchedInterests.length * 0.2) : 0.4;
   if (matchedInterests.length > 0) {
-    reasons.push(`Matches your interest in ${formatList(matchedInterests)}`);
+    reasons.push(`It is ${formatList(matchedInterests)}, which you care about`);
   }
 
   // Does the issue itself sit in territory the user knows?

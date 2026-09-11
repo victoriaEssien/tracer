@@ -1,13 +1,14 @@
+import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { currentUserId } from "@/auth";
-import { OpportunityCard } from "@/components/feed/opportunity-card";
-import { Card, EmptyState, LinkButton } from "@/components/ui";
+import { OpportunityRow } from "@/components/feed/opportunity-row";
+import { EmptyState, LinkButton, PageHeader } from "@/components/ui";
 import { relativeTime } from "@/lib/utils";
 import { getSaved } from "@/server/opportunities";
 
-export const metadata = { title: "Saved · Tracer" };
+export const metadata = { title: "Saved" };
 export const dynamic = "force-dynamic";
 
 export default async function SavedPage() {
@@ -15,57 +16,58 @@ export default async function SavedPage() {
   if (!userId) redirect("/");
 
   const saved = await getSaved(userId);
-  const changed = saved.filter((item) => item.statusNote !== null);
+  const moved = saved.filter((item) => item.statusNote !== null);
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-10">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Saved</h1>
-        <p className="mt-1.5 text-sm text-ink-soft">
-          Re-checked periodically for issues that were closed, assigned, or picked up by somebody
-          else.
-        </p>
-      </div>
+    <main id="main" className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+      <PageHeader
+        title="Saved"
+        lede="Re-checked regularly. If one gets closed, assigned or picked up while you were thinking, you find out here."
+      />
 
-      {changed.length > 0 ? (
-        <Card className="mb-5 border-warn/40 bg-warn-soft p-4">
-          <h2 className="text-sm font-medium text-warn">Status changed</h2>
+      {moved.length > 0 ? (
+        <div className="mb-6 border-y border-warn/35 bg-warn-soft px-4 py-3.5">
+          <h2 className="text-sm font-semibold text-warn">Something changed</h2>
           <ul className="mt-2 space-y-1.5">
-            {changed.map((item) => (
+            {moved.map((item) => (
               <li key={item.id} className="text-sm text-ink-soft">
                 <Link href={`/opportunities/${item.id}`} className="font-medium hover:underline">
                   {item.title}
                 </Link>{" "}
-                — {item.statusNote}
+                {item.statusNote}
                 <span className="text-ink-faint"> ({relativeTime(item.statusChangedAt)})</span>
               </li>
             ))}
           </ul>
-        </Card>
+        </div>
       ) : null}
 
       {saved.length === 0 ? (
         <EmptyState
-          title="Nothing saved yet"
-          action={<LinkButton href="/feed">Go to the feed</LinkButton>}
+          icon={Bookmark}
+          title="Nothing saved"
+          action={<LinkButton href="/feed">Go to your queue</LinkButton>}
         >
-          Save an opportunity and Tracer will keep an eye on it — you will be told here if it gets
-          closed, assigned, or picked up by someone else.
+          Save an issue and Tracer keeps watching it, so you hear about it if somebody else gets
+          there first.
         </EmptyState>
       ) : (
-        <div className="space-y-3">
-          {saved.map((item) => (
-            <div key={item.id}>
-              <OpportunityCard opportunity={item} context="saved" />
-              <p className="mt-1 px-4 text-xs text-ink-faint">
-                Saved {relativeTime(item.savedAt)} at {Math.round(item.scoreAtSave)}%
-                {Math.round(item.scoreAtSave) !== item.score
-                  ? ` · now ${item.score}%`
-                  : null}
+        <ul className="-mx-3 sm:-mx-4">
+          {saved.map((item, index) => (
+            <li key={item.id}>
+              <OpportunityRow opportunity={item} index={index} context="saved" />
+              <p className="px-3 pb-3 text-xs text-ink-faint sm:px-4">
+                Saved {relativeTime(item.savedAt)} at{" "}
+                <span className="font-mono tabular-nums">{Math.round(item.scoreAtSave)}%</span>
+                {Math.round(item.scoreAtSave) !== item.score ? (
+                  <>
+                    , now <span className="font-mono tabular-nums">{item.score}%</span>
+                  </>
+                ) : null}
               </p>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </main>
   );
