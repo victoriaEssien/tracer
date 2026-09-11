@@ -1,66 +1,83 @@
-import { AlertTriangle } from "lucide-react";
+import { Check, ListFilter, Timer } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { auth, signIn } from "@/auth";
-import { Button, Chip, EvidenceList, ExternalLink, ScoreMeter } from "@/components/ui";
+import { auth } from "@/auth";
+import { GitHubButton } from "@/components/github-button";
+import {
+  BreakdownProof,
+  ClaimedProof,
+  ThroughputProof,
+} from "@/components/marketing/feature-proof";
+import { HeroDemo } from "@/components/marketing/hero-demo";
+import { Chip, ExternalLink } from "@/components/ui";
 import { DIMENSION_LABELS, DIMENSION_WEIGHTS } from "@/config/scoring";
 import { getUserProfile } from "@/server/db/queries";
 import type { ScoreDimension } from "@/types";
 
 const REPOSITORY = "https://github.com/victoriaEssien/tracer";
 
-/**
- * Three issues that pass every filter a search can apply, and should not be
- * taken. The patterns are the ones Tracer finds constantly; the projects are
- * left unnamed, because using a real maintainer's issue as a cautionary tale
- * on a marketing page is not a thing to do to someone.
- */
-const SPECIMENS = [
+const FEATURES = [
   {
-    labels: ["good first issue", "help wanted"],
-    title: "Add a dark mode toggle to the settings panel",
-    meta: "TypeScript project, 12k stars, active this week",
-    verdict: "Someone took it eight months ago",
-    reveal:
-      "Comment seven of thirty-one: “I'd like to work on this.” Nobody was ever assigned, the label never changed, and the issue has looked open ever since.",
+    title: "It reads the comments, not the label",
+    body: "Half the issues that look free are not. Somebody says they will take it in comment seven, nobody assigns them, and the label never changes. Tracer reads the thread and tells you before you spend an evening on it.",
+    Proof: ClaimedProof,
   },
   {
-    labels: ["good first issue", "documentation"],
-    title: "Update the installation guide for the new CLI",
-    meta: "Go project, 4k stars, labelled two years ago",
-    verdict: "The work already shipped",
-    reveal:
-      "A pull request linked from the thread was merged last spring. The issue was never closed, so it still answers every search for beginner-friendly work.",
+    title: "It knows whether work actually lands",
+    body: "A project can look busy and still merge nothing from outsiders. Tracer measures real throughput: how many outside pull requests merged, how long a first review takes, how much is rotting in the queue.",
+    Proof: ThroughputProof,
   },
   {
-    labels: ["good first issue", "bug"],
-    title: "Fix the alignment of the toolbar icons on Safari",
-    meta: "JavaScript project, 2k stars, opened in 2017",
-    verdict: "Nobody wants it any more",
-    reveal:
-      "Eight years open, no comment since 2019, and the component it describes was rewritten twice. Fixing it would be a pull request into a room with nobody in it.",
+    title: "It shows the whole calculation",
+    body: "Eight weighted signals, each with the reasoning that produced it, and the arithmetic on screen. Nothing hides behind the number, and the weights live in a file you can open a pull request against.",
+    Proof: BreakdownProof,
   },
 ];
 
-/** What each scoring dimension is actually asking, in the user's terms. */
-const DIMENSION_QUESTIONS: Record<ScoreDimension, string> = {
-  skillMatch: "Written in things you already know?",
-  issueSuitability: "Genuinely free, or quietly taken?",
-  repositoryHealth: "Alive, and do outside contributions merge?",
-  issueClarity: "Enough detail to start, and to finish?",
-  difficultyFit: "The size of it against the time you have",
-  learningOpportunity: "Would it teach you what you wanted?",
-  maintainerActivity: "Will anyone review your pull request?",
-  competition: "Are three other people circling it?",
-};
+const STEPS = [
+  {
+    icon: Check,
+    title: "Sign in with GitHub",
+    body: "Read-only. Tracer never writes to your account, and asks for nothing beyond your public profile.",
+  },
+  {
+    icon: ListFilter,
+    title: "Say what you know",
+    body: "Languages, frameworks, what you want to learn, and how much time you actually have this week.",
+  },
+  {
+    icon: Timer,
+    title: "Get a ranked queue",
+    body: "Issues scored against your profile, each with a verdict and the reasons behind it. Save the good ones, hide the rest.",
+  },
+];
+
+const FAQ = [
+  {
+    q: "Does it write anything to my GitHub account?",
+    a: "No. Tracer only reads public data. It never comments, never assigns, never forks, and never opens a pull request on your behalf. The OAuth scope covers your public profile and email address, nothing more.",
+  },
+  {
+    q: "Does it need AI to work?",
+    a: "No. The scoring is deterministic and runs entirely on observed GitHub data. There is an optional AI layer that can summarise an issue if you press the button, and the product works fully with it switched off.",
+  },
+  {
+    q: "What does it cost?",
+    a: "Nothing. It is a free tool and the source is MIT licensed, so you can also run your own copy against your own database.",
+  },
+  {
+    q: "How is the score calculated?",
+    a: "Eight weighted signals, published in docs/scoring.md in the repository. If you think the weights are wrong, the scoring model is a file you can open a pull request against.",
+  },
+];
 
 /**
  * The landing page, and the sign-in surface. Persuade mode.
  *
- * Structure is problem-first: the reader meets three wasted Saturdays before
- * they meet the product, so the pitch answers something they have just felt
- * rather than announcing itself. Signed-in users never see this page.
+ * Centred composition, product-led: the hero carries a live switch between what
+ * a search gives you and what Tracer gives you, built from the same components
+ * the app uses so the demonstration can never drift from the real thing.
  */
 export default async function Home() {
   const session = await auth();
@@ -74,128 +91,166 @@ export default async function Home() {
 
   return (
     <main id="main">
-      <section className="mx-auto max-w-5xl px-4 pt-20 pb-16 sm:px-8 sm:pt-28 sm:pb-20">
-        <h1 className="max-w-3xl text-[2.75rem] leading-[0.98] font-semibold tracking-[-0.035em] text-balance sm:text-6xl">
-          A label is not a promise.
+      <section className="mx-auto max-w-5xl px-4 pt-16 pb-20 text-center sm:px-8 sm:pt-24">
+        <Link
+          href="/resources"
+          className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs text-ink-soft transition-colors duration-100 hover:border-line-strong hover:text-ink"
+        >
+          Never contributed before? Start here
+        </Link>
+
+        <h1 className="mx-auto mt-6 max-w-3xl text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.035em] text-balance sm:text-6xl">
+          Find open-source issues actually worth your time
         </h1>
 
-        <div className="mt-10 grid gap-x-16 gap-y-8 lg:grid-cols-[1fr_20rem]">
-          <p className="max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
-            Searching <span className="font-mono text-base sm:text-lg">good first issue</span>{" "}
-            returns thousands of results. They all look the same from the outside, and most of them
-            will cost you an evening. Here are three that pass every filter a search can apply.
-          </p>
+        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+          Searching <span className="font-mono text-base">good first issue</span> gives you a
+          million results and no way to choose. Tracer scores them against what you know and the
+          time you have, then tells you which ones to take.
+        </p>
 
-          <div className="lg:pt-2">
-            <form
-              action={async () => {
-                "use server";
-                await signIn("github", { redirectTo: "/onboarding" });
-              }}
-            >
-              <Button variant="primary" type="submit" className="w-full px-4 py-3 text-base">
-                Continue with GitHub
-              </Button>
-            </form>
-            <Link
-              href="/resources"
-              className="mt-2 block w-full rounded-md border border-line px-4 py-3 text-center text-base font-medium transition-colors duration-100 hover:border-line-strong hover:bg-raised"
-            >
-              Never contributed before?
-            </Link>
-            <p className="mt-3 text-xs text-ink-faint">
-              Reads public GitHub data. Nothing is written to your account.
-            </p>
-          </div>
+        <div className="mx-auto mt-8 flex max-w-md flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <GitHubButton size="lg" className="w-full sm:w-auto" />
+          <ExternalLink
+            href={REPOSITORY}
+            className="w-full justify-center rounded-lg border border-line px-5 py-3 text-base font-medium transition-colors duration-100 hover:border-line-strong hover:bg-raised sm:w-auto"
+          >
+            Read the source
+          </ExternalLink>
+        </div>
+
+        <p className="mt-4 text-xs text-ink-faint">
+          Free, open source, and read-only. Nothing is written to your account.
+        </p>
+
+        <div className="mt-14 text-left sm:mt-16">
+          <HeroDemo />
         </div>
       </section>
 
-      {/* The argument stays on screen while the evidence scrolls past it. */}
-      <section className="border-t border-line bg-surface" aria-labelledby="specimens">
-        <div className="mx-auto grid max-w-5xl gap-x-16 gap-y-10 px-4 py-16 sm:px-8 sm:py-20 lg:grid-cols-[16rem_1fr]">
-          <div className="lg:sticky lg:top-6 lg:self-start">
-            <h2 id="specimens" className="text-2xl font-semibold tracking-[-0.02em] text-balance">
-              Three wasted Saturdays
+      <section className="border-y border-line bg-surface" aria-label="What Tracer is">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-8 gap-y-3 px-4 py-5 text-xs text-ink-faint sm:px-8">
+          {[
+            "Eight signals per issue",
+            "Every score explained",
+            "No AI required",
+            "MIT licensed",
+            "Read-only access",
+          ].map((claim) => (
+            <span key={claim} className="inline-flex items-center gap-2">
+              <Check size={13} strokeWidth={2.5} aria-hidden className="text-good" />
+              {claim}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-4 py-20 sm:px-8 sm:py-24" aria-labelledby="features">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2
+            id="features"
+            className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance sm:text-4xl"
+          >
+            A label tells you almost nothing
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-ink-soft">
+            Maintainers add labels once and rarely revisit them. Everything that decides whether an
+            issue is worth taking happens after that, in the thread and in the dates.
+          </p>
+        </div>
+
+        <div className="mt-16 space-y-16 sm:space-y-20">
+          {FEATURES.map((feature, index) => (
+            <div
+              key={feature.title}
+              className="grid items-center gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16"
+            >
+              <div className={index % 2 === 1 ? "lg:order-2" : undefined}>
+                <h3 className="text-2xl leading-tight font-semibold tracking-[-0.02em] text-balance">
+                  {feature.title}
+                </h3>
+                <p className="mt-3 max-w-md text-base leading-relaxed text-ink-soft">
+                  {feature.body}
+                </p>
+              </div>
+              <div className={index % 2 === 1 ? "lg:order-1" : undefined}>
+                <feature.Proof />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-line bg-surface" aria-labelledby="how">
+        <div className="mx-auto max-w-5xl px-4 py-20 sm:px-8 sm:py-24">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2
+              id="how"
+              className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance sm:text-4xl"
+            >
+              Two minutes to set up
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-              Every one of these is open, labelled for newcomers, and in a healthy project. The
-              thing that disqualifies it is never in the label. It is in the thread, the dates, or a
-              pull request nobody closed.
-            </p>
-            <p className="mt-4 text-xs text-ink-faint">
-              Patterns Tracer finds daily. The projects are left unnamed on purpose.
+            <p className="mt-4 text-base leading-relaxed text-ink-soft">
+              Then the queue keeps itself current, and re-checks anything you save in case somebody
+              else gets there first.
             </p>
           </div>
 
-          <ol className="divide-y divide-line border-y border-line">
-            {SPECIMENS.map((specimen, index) => (
-              <li key={specimen.title} className="grid gap-4 py-7 sm:grid-cols-[2.5rem_1fr]">
-                <span
-                  aria-hidden
-                  className="font-mono text-xs text-ink-faint tabular-nums sm:pt-1"
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-
-                <div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {specimen.labels.map((label) => (
-                      <Chip key={label}>{label}</Chip>
-                    ))}
-                  </div>
-                  <p className="mt-2.5 text-lg leading-snug font-medium text-balance">
-                    {specimen.title}
-                  </p>
-                  <p className="mt-1 text-xs text-ink-faint">{specimen.meta}</p>
-
-                  <div className="mt-4 flex gap-2.5">
-                    <AlertTriangle
-                      size={15}
-                      strokeWidth={2}
-                      aria-hidden
-                      className="mt-0.5 shrink-0 text-warn"
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-warn">{specimen.verdict}</p>
-                      <p className="mt-1 max-w-lg text-sm leading-relaxed text-ink-soft">
-                        {specimen.reveal}
-                      </p>
-                    </div>
-                  </div>
+          <ol className="mt-14 grid gap-10 md:grid-cols-3">
+            {STEPS.map((step, index) => (
+              <li key={step.title}>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-line font-mono text-xs tabular-nums">
+                    {index + 1}
+                  </span>
+                  <step.icon size={16} strokeWidth={1.75} aria-hidden className="text-ink-faint" />
                 </div>
+                <h3 className="mt-4 text-base font-semibold tracking-tight">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{step.body}</p>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-8 sm:py-24" aria-labelledby="turn">
-        <div className="grid gap-x-16 gap-y-10 lg:grid-cols-[1fr_1fr]">
+      <section className="mx-auto max-w-5xl px-4 py-20 sm:px-8 sm:py-24" aria-labelledby="model">
+        <div className="grid gap-x-16 gap-y-10 lg:grid-cols-[1fr_1.1fr]">
           <div>
             <h2
-              id="turn"
-              className="text-3xl leading-[1.05] font-semibold tracking-[-0.03em] text-balance sm:text-4xl"
+              id="model"
+              className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance sm:text-4xl"
             >
-              Tracer reads the thread, not the label.
+              You can check the working
             </h2>
-            <p className="mt-5 max-w-lg text-base leading-relaxed text-ink-soft">
-              Eight questions, asked of every issue it finds, weighted into one number and shown
-              with the reasoning that produced it. The weights are published. Disagree with them and
-              you can open a pull request against them.
+            <p className="mt-4 max-w-md text-base leading-relaxed text-ink-soft">
+              A recommender nobody can take apart is not worth trusting. Here is the entire model,
+              live from the code that runs it. Disagree with a weight and you can open a pull
+              request against it.
             </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <ExternalLink
+                href={`${REPOSITORY}/blob/main/docs/scoring.md`}
+                className="rounded-lg border border-line px-3.5 py-2 text-sm font-medium transition-colors duration-100 hover:border-line-strong hover:bg-raised"
+              >
+                Read the scoring model
+              </ExternalLink>
+            </div>
           </div>
 
-          <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-1 lg:gap-y-4">
+          <dl className="divide-y divide-line rounded-xl border border-line bg-surface px-5">
             {dimensions.map(([dimension, weight]) => (
-              <div key={dimension} className="border-t border-line pt-3">
-                <dt className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm font-medium">{DIMENSION_LABELS[dimension]}</span>
-                  <span className="font-mono text-xs text-ink-faint tabular-nums">
+              <div key={dimension} className="flex items-center gap-4 py-3">
+                <dt className="w-32 shrink-0 text-sm font-medium">{DIMENSION_LABELS[dimension]}</dt>
+                <dd className="flex flex-1 items-center gap-3">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-raised">
+                    <div
+                      className="h-full rounded-full bg-accent"
+                      style={{ width: `${weight * 400}%` }}
+                    />
+                  </div>
+                  <span className="w-9 shrink-0 text-right font-mono text-xs text-ink-faint tabular-nums">
                     {Math.round(weight * 100)}%
                   </span>
-                </dt>
-                <dd className="mt-0.5 text-sm leading-snug text-ink-soft">
-                  {DIMENSION_QUESTIONS[dimension]}
                 </dd>
               </div>
             ))}
@@ -203,107 +258,41 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* The payoff. Real output, real project, named because it is praise. */}
-      <section className="border-y border-line bg-surface" aria-labelledby="payoff">
-        <div className="mx-auto max-w-5xl px-4 py-16 sm:px-8 sm:py-20">
-          <h2 id="payoff" className="text-2xl font-semibold tracking-[-0.02em] text-balance">
-            And this one, which is worth taking
+      <section className="border-y border-line bg-surface" aria-labelledby="faq">
+        <div className="mx-auto max-w-3xl px-4 py-20 sm:px-8 sm:py-24">
+          <h2
+            id="faq"
+            className="text-3xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance sm:text-4xl"
+          >
+            Questions people ask
           </h2>
 
-          <div className="mt-8 flex flex-col gap-6 sm:flex-row sm:gap-10">
-            <ScoreMeter value={79} verdict="recommended" size="lg" />
-
-            <div className="min-w-0 flex-1">
-              <p className="text-xl leading-snug font-medium text-balance">
-                Make the right sidebar resizable, like the left one
-              </p>
-              <p className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-ink-faint">
-                <ExternalLink
-                  href="https://github.com/openstreetmap/iD/issues/9872"
-                  className="font-mono hover:text-accent"
-                >
-                  openstreetmap/iD
-                </ExternalLink>
-                <span aria-hidden>·</span>
-                <span className="font-mono tabular-nums">3.9K stars</span>
-                <span aria-hidden>·</span>
-                <span className="text-warn">opened 3 years ago</span>
-              </p>
-
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                <Chip>JavaScript</Chip>
-                <Chip>TypeScript</Chip>
-                <Chip>Medium</Chip>
-                <Chip>3-10 hours</Chip>
+          <dl className="mt-10 divide-y divide-line border-t border-line">
+            {FAQ.map((item) => (
+              <div key={item.q} className="py-5">
+                <dt className="text-base font-medium">{item.q}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-ink-soft">{item.a}</dd>
               </div>
-
-              <div className="mt-5 grid gap-x-10 gap-y-4 sm:grid-cols-2">
-                <EvidenceList
-                  tone="positive"
-                  items={[
-                    "Written in JavaScript, which you know",
-                    "Nobody is assigned and no pull request touches it",
-                    "Active in the last month",
-                  ]}
-                />
-                <EvidenceList
-                  tone="caution"
-                  items={["Nobody has said what finished looks like"]}
-                />
-              </div>
-            </div>
-          </div>
-
-          <p className="mt-9 max-w-xl text-base leading-relaxed text-ink-soft">
-            Three years old and still worth taking, because the project is alive and nobody has
-            claimed it. Age alone would have thrown this one away. So would a label.
-          </p>
+            ))}
+          </dl>
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-4 py-16 sm:px-8 sm:py-24">
-        <div className="grid gap-x-16 gap-y-10 lg:grid-cols-[1fr_1fr]">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-[-0.02em] text-balance">
-              You can check the working
-            </h2>
-            <p className="mt-4 max-w-lg text-base leading-relaxed text-ink-soft">
-              A recommender nobody can take apart is not worth trusting. The weights, the rules and
-              the code are public under an MIT licence. Tracer should eventually be able to
-              recommend its own issues.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <ExternalLink
-                href={REPOSITORY}
-                className="rounded-md border border-line px-3.5 py-2 text-sm font-medium transition-colors duration-100 hover:border-line-strong hover:bg-raised"
-              >
-                Read the source
-              </ExternalLink>
-              <ExternalLink
-                href={`${REPOSITORY}/blob/main/docs/scoring.md`}
-                className="rounded-md border border-line px-3.5 py-2 text-sm font-medium transition-colors duration-100 hover:border-line-strong hover:bg-raised"
-              >
-                Read the scoring model
-              </ExternalLink>
-            </div>
-          </div>
-
-          <div className="lg:border-l lg:border-line lg:pl-16">
-            <p className="text-2xl leading-[1.15] font-semibold tracking-[-0.02em] text-balance">
-              Find something worth doing this weekend.
-            </p>
-            <form
-              action={async () => {
-                "use server";
-                await signIn("github", { redirectTo: "/onboarding" });
-              }}
-              className="mt-6"
-            >
-              <Button variant="primary" type="submit" className="px-4 py-3 text-base">
-                Continue with GitHub
-              </Button>
-            </form>
-          </div>
+      <section className="mx-auto max-w-5xl px-4 py-24 text-center sm:px-8 sm:py-28">
+        <h2 className="mx-auto max-w-2xl text-3xl leading-[1.05] font-semibold tracking-[-0.03em] text-balance sm:text-5xl">
+          Find something worth doing this weekend
+        </h2>
+        <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-ink-soft">
+          Set up a profile in two minutes and get a queue that is actually yours.
+        </p>
+        <div className="mx-auto mt-8 flex max-w-xs justify-center">
+          <GitHubButton size="lg" className="w-full" />
+        </div>
+        <div className="mt-6 flex flex-wrap justify-center gap-1.5">
+          <Chip>Free</Chip>
+          <Chip>Read-only</Chip>
+          <Chip>No AI required</Chip>
+          <Chip>Self-hostable</Chip>
         </div>
       </section>
     </main>
