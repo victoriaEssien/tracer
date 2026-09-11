@@ -178,10 +178,6 @@ export function OpportunityCard({
                 ) : null}
               </>
             )}
-
-            <span className="ml-auto text-xs text-ink-faint">
-              scored {relativeTime(opportunity.analyzedAt)}
-            </span>
           </div>
         </div>
       </div>
