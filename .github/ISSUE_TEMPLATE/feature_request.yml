@@ -1,0 +1,43 @@
+name: Feature request
+description: Suggest something Tracer should do
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check `docs/spec.md` first. Some features are deliberately out of scope for V1 (section 21) and some are already planned (section 22).
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve
+      description: Describe the situation where the current behaviour falls short.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Onboarding and profile
+        - GitHub data collection
+        - Repository health analysis
+        - Issue analysis
+        - Scoring and verdict
+        - Explanations
+        - Feed and saved opportunities
+        - AI layer
+        - Developer experience
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

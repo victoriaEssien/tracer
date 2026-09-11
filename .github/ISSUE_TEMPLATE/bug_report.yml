@@ -1,0 +1,51 @@
+name: Bug report
+description: Something in Tracer does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. If the bug involves a specific GitHub repository or issue, please include the link, since most recommendation bugs are data-dependent.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Describe the behaviour you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: github-link
+    attributes:
+      label: Related GitHub repository or issue
+      description: The repository or issue Tracer was analyzing, if relevant.
+      placeholder: https://github.com/owner/repo/issues/123
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        OS:
+        Browser:
+        Node version:
+        Tracer commit:
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste any relevant console or server output.

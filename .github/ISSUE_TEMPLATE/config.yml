@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Product specification
+    url: https://github.com/victoriaEssien/tracer/blob/main/docs/spec.md
+    about: What Tracer is meant to do, and what is deliberately out of scope.
+  - name: Recommendation methodology
+    url: https://github.com/victoriaEssien/tracer/blob/main/docs/scoring.md
+    about: How the Contribution Fit Score is calculated.

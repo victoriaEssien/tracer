@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/**
+ * Tracer's surface is deliberately quiet. The product's job is to make one
+ * decision easier, so colour is reserved for the three things that carry
+ * meaning: the verdict, the score, and the difference between an observed fact
+ * and an inference.
+ *
+ * Palette values live on `:root` so the dark scheme can override them; the
+ * `@theme inline` block below turns each one into a Tailwind utility
+ * (`bg-surface`, `text-ink-soft`, `border-line`, ...) that follows the override.
+ */
+
+:root {
+  --canvas: #fbfbfa;
+  --surface: #ffffff;
+  --raised: #f4f4f2;
+  --line: #e5e4e0;
+  --ink: #1a1a19;
+  --ink-soft: #5c5b57;
+  --ink-faint: #8f8e89;
+
+  --accent: #1f5f4b;
+  --accent-soft: #e6f0ec;
+
+  --good: #1f7a4d;
+  --good-soft: #e7f3ec;
+  --warn: #8a5a12;
+  --warn-soft: #f8f0e0;
+  --bad: #9b3b32;
+  --bad-soft: #f7eae8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #111211;
+    --surface: #181a19;
+    --raised: #202322;
+    --line: #2c302e;
+    --ink: #ecebe7;
+    --ink-soft: #a5a49e;
+    --ink-faint: #77766f;
+
+    --accent: #6fd3a8;
+    --accent-soft: #17251f;
+
+    --good: #6fd3a8;
+    --good-soft: #16251e;
+    --warn: #dcb46a;
+    --warn-soft: #24201a;
+    --bad: #e08a80;
+    --bad-soft: #261a19;
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Issue bodies are rendered as plain text; this keeps them readable without
+   pulling in a markdown renderer for what is, at this stage, a preview. */
+.issue-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+.issue-body code,
+.issue-body pre {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}

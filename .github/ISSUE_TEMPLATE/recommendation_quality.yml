@@ -1,0 +1,42 @@
+name: Recommendation quality
+description: Tracer recommended something it should not have, or missed something obvious
+labels: ["recommendation-quality"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This feedback is how the scoring model gets refined. Concrete examples are much more useful than general impressions.
+  - type: input
+    id: issue-link
+    attributes:
+      label: GitHub issue link
+      placeholder: https://github.com/owner/repo/issues/123
+    validations:
+      required: true
+  - type: input
+    id: score
+    attributes:
+      label: Score and verdict Tracer gave
+      placeholder: 91%, recommended
+    validations:
+      required: true
+  - type: dropdown
+    id: direction
+    attributes:
+      label: What went wrong
+      options:
+        - Scored too high
+        - Scored too low
+        - Wrong verdict
+        - Explanation was inaccurate
+        - Should not have appeared at all
+        - Missing from recommendations entirely
+    validations:
+      required: true
+  - type: textarea
+    id: reasoning
+    attributes:
+      label: Why you disagree
+      description: Which signal looks wrong, and what the data actually shows.
+    validations:
+      required: true
