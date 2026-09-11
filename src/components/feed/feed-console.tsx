@@ -4,7 +4,7 @@ import { Inbox, Loader2, RefreshCw, SearchX } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { DiscoveryDock } from "@/components/feed/discovery-dock";
+import { useDiscovery } from "@/components/feed/discovery-provider";
 import { OpportunityRow } from "@/components/feed/opportunity-row";
 import { Button, EmptyState, StatusMessage } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,10 @@ export function FeedConsole({
   const [undoable, setUndoable] = useState<OpportunitySummary | null>(null);
   const [dismissedList, setDismissedList] = useState<OpportunitySummary[] | null>(null);
   const [restoredCount, setRestoredCount] = useState(0);
-  const [running, setRunning] = useState(discovering);
+
+  // The run is owned by the layout, so it outlives this page.
+  const { running, start } = useDiscovery();
+  const requested = useRef(false);
 
   const [cursor, setCursor] = useState(0);
   const rows = useRef<(HTMLDivElement | null)[]>([]);
@@ -96,6 +99,14 @@ export function FeedConsole({
     if (filter === "dismissed") void loadDismissed();
   }, [filter, loadDismissed, restoredCount]);
 
+  // Arriving from onboarding asks for the first run, once.
+  useEffect(() => {
+    if (discovering && !requested.current) {
+      requested.current = true;
+      start();
+    }
+  }, [discovering, start]);
+
   const undo = async () => {
     if (!undoable) return;
     await fetch(`/api/opportunities/${undoable.id}/dismiss`, { method: "DELETE" });
@@ -131,7 +142,7 @@ export function FeedConsole({
           ))}
         </div>
 
-        <Button onClick={() => setRunning(true)} disabled={running} size="sm">
+        <Button onClick={start} disabled={running} size="sm">
           {running ? (
             <Loader2 size={12} strokeWidth={2} aria-hidden className="animate-spin" />
           ) : (
@@ -140,14 +151,6 @@ export function FeedConsole({
           {running ? "Searching" : "Find more"}
         </Button>
       </div>
-
-      <DiscoveryDock
-        running={running}
-        onFinished={() => {
-          setRunning(false);
-          router.refresh();
-        }}
-      />
 
       {undoable ? (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-raised px-3 py-2.5 sm:px-4">
@@ -184,7 +187,7 @@ export function FeedConsole({
             }
             action={
               !running && opportunities.length === 0 ? (
-                <Button variant="primary" onClick={() => setRunning(true)}>
+                <Button variant="primary" onClick={start}>
                   Find opportunities
                 </Button>
               ) : null

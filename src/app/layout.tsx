@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
 
+import { DiscoveryProvider } from "@/components/feed/discovery-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
 import "./globals.css";
@@ -52,9 +53,11 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <SiteNav />
-        <div className="flex-1">{children}</div>
-        <SiteFooter />
+        <DiscoveryProvider>
+          <SiteNav />
+          <div className="flex-1">{children}</div>
+          <SiteFooter />
+        </DiscoveryProvider>
       </body>
     </html>
   );
