@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { TechIcon } from "@/components/onboarding/tech-icon";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,6 +18,7 @@ export function ChipPicker({
   selected,
   onChange,
   allowCustom = true,
+  icons = false,
 }: {
   label: string;
   hint?: string;
@@ -24,6 +26,8 @@ export function ChipPicker({
   selected: string[];
   onChange: (next: string[]) => void;
   allowCustom?: boolean;
+  /** Only where the options are technologies. Subjects have no brand marks. */
+  icons?: boolean;
 }) {
   const [draft, setDraft] = useState("");
 
@@ -69,12 +73,13 @@ export function ChipPicker({
               aria-pressed={active}
               onClick={() => toggle(option)}
               className={cn(
-                "rounded-full border px-2.5 py-1 text-xs font-medium transition",
+                "inline-flex min-h-8 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition",
                 active
                   ? "border-transparent bg-ink text-canvas"
                   : "border-line bg-surface text-ink-soft hover:border-ink-faint hover:text-ink",
               )}
             >
+              {icons ? <TechIcon name={option} /> : null}
               {option}
             </button>
           );

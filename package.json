@@ -39,6 +39,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "^15.5.0",
+    "simple-icons": "^16.30.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

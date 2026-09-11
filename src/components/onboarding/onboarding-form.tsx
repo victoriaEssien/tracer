@@ -95,18 +95,21 @@ export function OnboardingForm({ profile }: { profile: UserProfile | null }) {
             options={LANGUAGES}
             selected={languages}
             onChange={setLanguages}
+            icons
           />
           <ChipPicker
             label="Frameworks and libraries"
             options={FRAMEWORKS}
             selected={frameworks}
             onChange={setFrameworks}
+            icons
           />
           <ChipPicker
             label="Tools and databases"
             options={TOOLS}
             selected={tools}
             onChange={setTools}
+            icons
           />
         </div>
       </Panel>
@@ -118,6 +121,7 @@ export function OnboardingForm({ profile }: { profile: UserProfile | null }) {
             options={[...LANGUAGES, ...FRAMEWORKS, "Testing", "Documentation"]}
             selected={learning}
             onChange={setLearning}
+            icons
           />
           <ChipPicker
             label="Subjects I care about"
