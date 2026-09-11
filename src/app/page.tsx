@@ -10,7 +10,7 @@ import {
   ThroughputProof,
 } from "@/components/marketing/feature-proof";
 import { HeroDemo } from "@/components/marketing/hero-demo";
-import { Chip, ExternalLink } from "@/components/ui";
+import { Chip, ExternalLink, InlineLabel } from "@/components/ui";
 import { DIMENSION_LABELS, DIMENSION_WEIGHTS } from "@/config/scoring";
 import { getUserProfile } from "@/server/db/queries";
 import type { ScoreDimension } from "@/types";
@@ -104,9 +104,9 @@ export default async function Home() {
         </h1>
 
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
-          Searching <span className="font-mono text-base">good first issue</span> gives you a
-          million results and no way to choose. Tracer scores them against what you know and the
-          time you have, then tells you which ones to take.
+          Searching <InlineLabel>good first issue</InlineLabel> gives you a million results and no
+          way to choose. Tracer scores them against what you know and the time you have, then tells
+          you which ones to take.
         </p>
 
         <div className="mx-auto mt-8 flex max-w-md flex-col items-center gap-3 sm:flex-row sm:justify-center">

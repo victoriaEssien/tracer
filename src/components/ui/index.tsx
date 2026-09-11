@@ -192,6 +192,23 @@ export function Chip({
   );
 }
 
+/**
+ * A GitHub label quoted inside a sentence.
+ *
+ * Setting it in mono put a wide, differently-proportioned face in the middle of
+ * a sans paragraph, which reads as broken spacing rather than as a quotation.
+ * Drawing the thing itself is clearer: it is a label, so it looks like one.
+ * Sized in `em` so it scales with whatever text it sits in.
+ */
+export function InlineLabel({ children }: { children: ReactNode }) {
+  return (
+    <span className="mx-[0.1em] my-[-0.2em] inline-flex items-center gap-[0.4em] rounded-full border border-line bg-raised px-[0.6em] py-[0.15em] align-middle text-[0.82em] font-medium whitespace-nowrap text-ink-soft">
+      <span aria-hidden className="h-[0.45em] w-[0.45em] rounded-full bg-good" />
+      {children}
+    </span>
+  );
+}
+
 export const VERDICT_COPY: Record<Verdict, { label: string; tone: "good" | "warn" | "bad" }> = {
   recommended: { label: "Take it", tone: "good" },
   possible: { label: "Worth a look", tone: "warn" },

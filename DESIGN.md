@@ -65,6 +65,7 @@ No entrance animations on sections, no parallax, no scroll-driven effects.
 - **Row** is the queue's atom: score meter, title, repository, signal chips, age, actions. Full-row hover, keyboard focusable, `j`/`k`/`Enter`/`s`/`d` operable.
 - **Meter** renders a 0 to 100 score as a filled track tinted by verdict. The one piece of data visualisation in the product.
 - **Chip** carries a single fact: a technology, a difficulty, an estimate.
+- **Inline label** draws a GitHub label quoted inside a sentence, sized in `em` so it scales with its paragraph. Mono in flowing prose reads as broken spacing, not as quotation.
 - **Evidence list** pairs an icon with a claim. Positive and cautionary variants.
 - **Panel** is the dossier's container: a rule, a heading, content. Not a card, and never nested.
 
