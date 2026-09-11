@@ -86,11 +86,8 @@ export function OnboardingForm({ profile }: { profile: UserProfile | null }) {
       return;
     }
 
-    // A first run needs something in the feed to look at, so discovery starts
-    // here rather than waiting for a scheduler. It is deliberately not awaited:
-    // a run takes a minute or two, and making someone stare at a disabled
-    // button for that long is not a first impression worth having. The feed
-    // picks up the `?discovering=1` flag and reports progress there instead.
+    // Deliberately not awaited: a run takes a minute or two, and the feed
+    // reports progress on `?discovering=1` rather than holding the form open.
     void fetch("/api/jobs/discovery", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

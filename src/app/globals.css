@@ -88,12 +88,9 @@ body {
 }
 
 /**
- * One focus treatment for the whole app.
- *
- * `:focus-visible` rather than `:focus` so a mouse click does not leave a ring
- * behind, and a single rule rather than per-component styling so that removing
- * an outline somewhere cannot quietly leave a control with no focus state at
- * all — which is what happened before this existed.
+ * One focus treatment for the whole app. `:focus-visible` so a mouse click does
+ * not leave a ring behind, and one rule rather than per-component styling, so
+ * that removing an outline somewhere cannot leave a control with no focus state.
  */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--accent);

@@ -52,7 +52,7 @@ export function ChipPicker({
 
   return (
     // A fieldset rather than a label: these are a group of toggle buttons, and
-    // a bare <label> points at nothing, which is what this used to do.
+    // a bare <label> has no control to point at.
     <fieldset className="border-0 p-0">
       <div className="mb-2 flex items-baseline justify-between gap-3">
         <legend className="text-sm font-medium">{label}</legend>
