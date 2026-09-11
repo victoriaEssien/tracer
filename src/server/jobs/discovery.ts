@@ -59,8 +59,7 @@ export async function runDiscovery(
   const client = await githubForUser(userId);
 
   // Languages the user knows or wants to learn are the search axis; interests
-  // are too vague to search on and are scored later instead. Frameworks are
-  // dropped rather than sent as `language:`, which GitHub would ignore.
+  // are too vague to search on and are scored later instead.
   const languages = languageCandidates([...profile.experienced, ...profile.learning]).slice(0, 4);
 
   const searches = buildDiscoveryQueries({ languages });
