@@ -192,20 +192,17 @@ export function Chip({
   );
 }
 
-export const VERDICT_COPY: Record<
-  Verdict,
-  { label: string; short: string; tone: "good" | "warn" | "bad" }
-> = {
-  recommended: { label: "Take it", short: "Take", tone: "good" },
-  possible: { label: "Worth a look", short: "Maybe", tone: "warn" },
-  "not-recommended": { label: "Skip it", short: "Skip", tone: "bad" },
+export const VERDICT_COPY: Record<Verdict, { label: string; tone: "good" | "warn" | "bad" }> = {
+  recommended: { label: "Take it", tone: "good" },
+  possible: { label: "Worth a look", tone: "warn" },
+  "not-recommended": { label: "Skip it", tone: "bad" },
 };
 
-export function VerdictChip({ verdict, short = false }: { verdict: Verdict; short?: boolean }) {
-  const { label, short: shortLabel, tone } = VERDICT_COPY[verdict];
+export function VerdictChip({ verdict }: { verdict: Verdict }) {
+  const { label, tone } = VERDICT_COPY[verdict];
   return (
     <Chip tone={tone} className="font-medium">
-      {short ? shortLabel : label}
+      {label}
     </Chip>
   );
 }

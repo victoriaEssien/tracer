@@ -4,7 +4,7 @@
  * Every page is server-rendered on demand and does real work first, so without
  * these the browser sits on the previous screen with no sign of progress.
  */
-export function RowSkeleton() {
+function RowSkeleton() {
   return (
     <div className="border-b border-line px-3 py-4 sm:px-4">
       <div className="flex gap-4">
