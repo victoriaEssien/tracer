@@ -2,13 +2,14 @@ import Link from "next/link";
 
 import { auth, signOut } from "@/auth";
 import { GitHubButton } from "@/components/github-button";
+import { NavLink } from "@/components/nav-link";
 import { Button } from "@/components/ui";
 
 const LINKS = [
-  { href: "/feed", label: "Queue" },
-  { href: "/saved", label: "Saved" },
-  { href: "/resources", label: "First time?" },
-  { href: "/profile", label: "Profile" },
+  { href: "/feed", label: "Queue", owns: ["/opportunities"] },
+  { href: "/saved", label: "Saved", owns: [] },
+  { href: "/resources", label: "First time?", owns: [] },
+  { href: "/profile", label: "Profile", owns: ["/onboarding"] },
 ];
 
 export async function SiteNav() {
@@ -27,13 +28,9 @@ export async function SiteNav() {
         {session ? (
           <div className="flex flex-wrap items-center gap-x-0.5">
             {LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="rounded px-2 py-1.5 text-sm text-ink-soft transition-colors duration-100 hover:bg-raised hover:text-ink"
-              >
+              <NavLink key={link.href} href={link.href} owns={link.owns}>
                 {link.label}
-              </Link>
+              </NavLink>
             ))}
             <form
               action={async () => {
