@@ -7,7 +7,7 @@ const REPOSITORY = "https://github.com/victoriaEssien/tracer";
 export function SiteFooter() {
   return (
     <footer className="mt-20 border-t border-line">
-      <div className="mx-auto flex max-w-3xl flex-wrap items-start justify-between gap-x-8 gap-y-6 px-4 py-8 sm:px-6">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-start justify-between gap-x-8 gap-y-6 px-4 py-8 sm:px-8">
         <div>
           <p className="text-sm font-semibold tracking-tight lowercase">tracer</p>
           <p className="mt-1 text-xs text-ink-faint">Find open-source work worth doing.</p>

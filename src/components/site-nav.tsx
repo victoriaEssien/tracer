@@ -15,7 +15,7 @@ export async function SiteNav() {
 
   return (
     <header className="border-b border-line">
-      <nav className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-5 gap-y-2 px-4 py-3 sm:px-6">
+      <nav className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-5 gap-y-2 px-4 py-3 sm:px-8">
         <Link
           href={session ? "/feed" : "/"}
           className="text-sm font-semibold tracking-tight lowercase"
