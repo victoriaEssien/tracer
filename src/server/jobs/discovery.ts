@@ -21,6 +21,7 @@ import {
 } from "@/server/github";
 import * as queries from "@/server/db/queries";
 import { analyzePending } from "@/server/opportunities";
+import type { DiscoveryProgress } from "@/types";
 
 export interface DiscoveryOptions {
   /** How many issues to collect and score in one run. */
@@ -29,6 +30,8 @@ export interface DiscoveryOptions {
   maxRepositories?: number;
   /** Minimum stars for a candidate repository. */
   minStars?: number;
+  /** Which page of search results to read. Defaults to how much is already scored. */
+  page?: number;
 }
 
 export interface DiscoveryResult {
@@ -43,6 +46,8 @@ export interface DiscoveryResult {
 export async function runDiscovery(
   userId: string,
   options: DiscoveryOptions = {},
+  /** Called as each step finishes, so the browser can show real progress. */
+  onProgress: (progress: DiscoveryProgress) => void = () => {},
 ): Promise<DiscoveryResult> {
   const result: DiscoveryResult = {
     queriesRun: 0,
@@ -62,7 +67,11 @@ export async function runDiscovery(
   // are too vague to search on and are scored later instead.
   const languages = languageCandidates([...profile.experienced, ...profile.learning]).slice(0, 4);
 
-  const searches = buildDiscoveryQueries({ languages });
+  // Later runs read deeper into the results, so asking again finds things the
+  // first pass never saw rather than the same page of candidates.
+  const page = options.page ?? (await queries.countAnalyses(userId)) / 30 + 1;
+
+  const searches = buildDiscoveryQueries({ languages, page: Math.floor(page) });
 
   const maxIssues = options.maxIssues ?? 40;
   const maxRepositories = options.maxRepositories ?? 15;
@@ -72,12 +81,21 @@ export async function runDiscovery(
 
   try {
     for (const query of searches) {
-      if (candidates.length >= maxIssues * 2) break;
+      // Every query runs. Stopping early because raw candidates looked
+      // plentiful meant most language and label combinations were never tried,
+      // and a repeat run kept re-reading the same two.
+      if (candidates.length >= 400) break;
       const found = await searchIssues(client, query);
       result.queriesRun += 1;
       candidates.push(
         ...found.map((item) => ({ owner: item.owner, repo: item.repo, number: item.number })),
       );
+      onProgress({
+        phase: "searching",
+        queriesRun: result.queriesRun,
+        queriesTotal: searches.length,
+        candidates: candidates.length,
+      });
     }
   } catch (error) {
     if (!(error instanceof RateLimitError)) throw error;
@@ -101,6 +119,12 @@ export async function runDiscovery(
 
       repositoryIds.set(fullName, repositoryId);
       result.repositoriesCollected += 1;
+      onProgress({
+        phase: "collecting",
+        repositories: result.repositoriesCollected,
+        issues: result.issuesCollected,
+        issuesTarget: maxIssues,
+      });
 
       for (const number of issueNumbers.slice(0, 4)) {
         if (result.issuesCollected >= maxIssues) break;
@@ -113,6 +137,12 @@ export async function runDiscovery(
 
         await queries.upsertIssue(repositoryId, issue);
         result.issuesCollected += 1;
+        onProgress({
+          phase: "collecting",
+          repositories: result.repositoriesCollected,
+          issues: result.issuesCollected,
+          issuesTarget: maxIssues,
+        });
       }
     }
   } catch (error) {
@@ -121,7 +151,9 @@ export async function runDiscovery(
     result.rateLimited = true;
   }
 
-  result.issuesAnalyzed = await analyzePending(userId, profile, maxIssues);
+  result.issuesAnalyzed = await analyzePending(userId, profile, maxIssues, (analyzed, total) =>
+    onProgress({ phase: "scoring", analyzed, total }),
+  );
 
   return result;
 }

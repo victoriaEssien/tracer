@@ -42,6 +42,8 @@ export interface DiscoveryQuery {
   /** Skip issues that already have a crowd on them. */
   maxComments?: number;
   perPage?: number;
+  /** Which page of results to read. Later runs look deeper. */
+  page?: number;
 }
 
 /**
@@ -78,6 +80,7 @@ export async function searchIssues(
         sort: "updated",
         order: "desc",
         per_page: query.perPage ?? 30,
+        page: query.page ?? 1,
         advanced_search: "true",
       },
       cacheSeconds: 3600,
@@ -105,6 +108,7 @@ export function buildDiscoveryQueries(input: {
   languages: string[];
   updatedWithinDays?: number;
   maxQueries?: number;
+  page?: number;
 }): DiscoveryQuery[] {
   const languages = input.languages.length > 0 ? input.languages : [undefined];
   const queries: DiscoveryQuery[] = [];
@@ -114,6 +118,7 @@ export function buildDiscoveryQueries(input: {
       queries.push({
         language,
         label,
+        page: input.page,
         updatedWithinDays: input.updatedWithinDays ?? 120,
       });
     }

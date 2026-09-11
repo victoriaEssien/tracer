@@ -376,6 +376,15 @@ export async function listFeed(userId: string, filters: FeedFilters = {}): Promi
     .offset(filters.offset ?? 0);
 }
 
+/** How many issues this user already has scored. Drives discovery paging. */
+export async function countAnalyses(userId: string): Promise<number> {
+  const [row] = await db
+    .select({ total: sql<number>`count(*)::int` })
+    .from(analyses)
+    .where(eq(analyses.userId, userId));
+  return row?.total ?? 0;
+}
+
 export async function getAnalysisFor(
   issueId: string,
   userId: string,
