@@ -13,7 +13,7 @@ import {
   Score,
   VerdictBadge,
 } from "@/components/ui";
-import { formatCompactNumber, formatHours, relativeTime } from "@/lib/utils";
+import { cn, formatCompactNumber, formatHours, relativeTime } from "@/lib/utils";
 import type { OpportunitySummary } from "@/types";
 
 /**
@@ -24,39 +24,62 @@ import type { OpportunitySummary } from "@/types";
  */
 export function OpportunityCard({
   opportunity,
+  context = "feed",
   onDismissed,
+  onRemoved,
 }: {
   opportunity: OpportunitySummary;
+  /**
+   * Which list the card is in. Dismissing from the saved list would hide the
+   * card while leaving the bookmark in place, so the saved list offers to
+   * remove the bookmark instead.
+   */
+  context?: "feed" | "saved" | "dismissed";
   onDismissed?: (id: string) => void;
+  onRemoved?: (id: string) => void;
 }) {
   const router = useRouter();
   const [saved, setSaved] = useState(opportunity.saved);
   const [pending, startTransition] = useTransition();
-  const [hidden, setHidden] = useState(false);
-
-  if (hidden) return null;
+  const [busy, setBusy] = useState(false);
 
   const toggleSave = async () => {
     const next = !saved;
     setSaved(next);
+    setBusy(true);
     const response = await fetch(`/api/opportunities/${opportunity.id}/save`, {
       method: next ? "POST" : "DELETE",
     });
     if (!response.ok) setSaved(!next);
+    setBusy(false);
+    if (context === "saved" && !next) onRemoved?.(opportunity.id);
     startTransition(() => router.refresh());
   };
 
   const dismiss = async () => {
-    setHidden(true);
+    setBusy(true);
     await fetch(`/api/opportunities/${opportunity.id}/dismiss`, { method: "POST" });
+    setBusy(false);
     onDismissed?.(opportunity.id);
     startTransition(() => router.refresh());
   };
 
+  const restore = async () => {
+    setBusy(true);
+    await fetch(`/api/opportunities/${opportunity.id}/dismiss`, { method: "DELETE" });
+    setBusy(false);
+    onRemoved?.(opportunity.id);
+    startTransition(() => router.refresh());
+  };
+
+  const ageDays = Math.floor(
+    (Date.now() - new Date(opportunity.openedAt).getTime()) / 86_400_000,
+  );
+
   return (
     <Card className="p-4 transition hover:border-ink-faint">
       <div className="flex items-start gap-4">
-        <div className="w-12 shrink-0 pt-0.5">
+        <div className="w-14 shrink-0 pt-0.5">
           <Score value={opportunity.score} verdict={opportunity.verdict} />
         </div>
 
@@ -74,6 +97,18 @@ export function OpportunityCard({
           <p className="mt-1 font-mono text-xs text-ink-faint">
             {opportunity.repository.fullName} #{opportunity.issueNumber} ·{" "}
             {formatCompactNumber(opportunity.repository.stars)} stars
+          </p>
+
+          {/* Age is the difference between a live issue and an abandoned one,
+              so it belongs on the card rather than one click away. */}
+          <p className="mt-1 text-xs">
+            <span className={cn(ageDays > 365 ? "text-warn" : "text-ink-faint")}>
+              opened {relativeTime(opportunity.openedAt)}
+            </span>
+            <span className="text-ink-faint">
+              {" · active "}
+              {relativeTime(opportunity.issueUpdatedAt)}
+            </span>
           </p>
 
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
@@ -106,24 +141,44 @@ export function OpportunityCard({
               rel="noreferrer"
               className="rounded-md border border-line px-2.5 py-1 text-xs font-medium transition hover:bg-raised"
             >
-              View issue ↗
+              View issue
+              <span className="sr-only"> (opens on GitHub in a new tab)</span>
+              <span aria-hidden> ↗</span>
             </a>
-            <Button
-              variant="ghost"
-              onClick={toggleSave}
-              disabled={pending}
-              className="px-2.5 py-1 text-xs"
-            >
-              {saved ? "Saved" : "Save"}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={dismiss}
-              disabled={pending}
-              className="px-2.5 py-1 text-xs"
-            >
-              Dismiss
-            </Button>
+
+            {context === "dismissed" ? (
+              <Button
+                variant="secondary"
+                onClick={restore}
+                disabled={busy || pending}
+                className="px-2.5 py-1 text-xs"
+              >
+                Restore
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant={saved ? "active" : "ghost"}
+                  onClick={toggleSave}
+                  aria-pressed={saved}
+                  disabled={busy || pending}
+                  className="px-2.5 py-1 text-xs"
+                >
+                  {saved ? "✓ Saved" : "Save"}
+                </Button>
+                {context === "feed" ? (
+                  <Button
+                    variant="ghost"
+                    onClick={dismiss}
+                    disabled={busy || pending}
+                    className="px-2.5 py-1 text-xs"
+                  >
+                    Dismiss
+                  </Button>
+                ) : null}
+              </>
+            )}
+
             <span className="ml-auto text-xs text-ink-faint">
               scored {relativeTime(opportunity.analyzedAt)}
             </span>
