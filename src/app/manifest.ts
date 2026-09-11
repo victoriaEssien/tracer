@@ -2,10 +2,6 @@ import type { MetadataRoute } from "next";
 
 import { BRAND, SITE_DESCRIPTION, SITE_NAME } from "@/config/site";
 
-/**
- * The maskable icon is its own file because Android crops to a circle, and the
- * mark has to sit inside that safe area rather than run to the edges.
- */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: `${SITE_NAME}: find open-source work worth doing`,
@@ -15,6 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: BRAND.canvas,
     theme_color: BRAND.canvas,
+    // Two files: Android crops a home-screen icon to a circle, so the maskable
+    // one keeps the mark inside that safe area instead of running to the edges.
     icons: [
       { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
       { src: "/icon-maskable.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" },

@@ -3,10 +3,9 @@ import { cn } from "@/lib/utils";
 /**
  * The mark: three score meters, ranked, the top one picked out.
  *
- * It is the product's own instrument rather than an invented symbol. The queue
- * is a column of tracks with a score filled into each, the best one sits at the
- * top, and the accent marks the one worth taking. Anyone who has used Tracer
- * for a minute has already read this shape.
+ * The product's own instrument rather than an invented symbol. A queue is a
+ * column of tracks with a score filled into each, the best sits at the top,
+ * and the accent marks the one worth taking.
  */
 export function Logo({ size = 20, className }: { size?: number; className?: string }) {
   return (
@@ -40,12 +39,3 @@ export function Logo({ size = 20, className }: { size?: number; className?: stri
   );
 }
 
-/** The mark and the name, as one link target. */
-export function Wordmark({ className }: { className?: string }) {
-  return (
-    <span className={cn("inline-flex items-center gap-2", className)}>
-      <Logo size={19} />
-      <span className="text-sm font-semibold tracking-tight lowercase">tracer</span>
-    </span>
-  );
-}

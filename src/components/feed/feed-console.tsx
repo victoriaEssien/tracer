@@ -118,11 +118,10 @@ export function FeedConsole({
   return (
     <div>
       <div className="sticky top-14 z-10 -mx-3 mb-1 flex items-center gap-2 border-b border-line bg-canvas/92 px-3 py-2.5 backdrop-blur-sm sm:-mx-4 sm:gap-4 sm:px-4">
-        {/* Scrolls sideways rather than wrapping, so the bar it is stuck in
-            stays one row tall on the screen with the least room for two. The
-            five filters come to more than a phone is wide, so the right edge
-            fades: a filter cut off square reads as one hidden behind the
-            button next to it, rather than as more to scroll through. */}
+        {/* Scrolls sideways rather than wrapping, so the sticky bar stays one
+            row tall on the screen with least room for two. The right edge
+            fades because a filter cut off square reads as one hidden behind
+            the button, rather than as more to scroll through. */}
         <div
           role="group"
           aria-label="Filter by verdict"
