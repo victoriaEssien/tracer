@@ -28,6 +28,29 @@ pnpm lint
 pnpm typecheck
 ```
 
+## Running the app
+
+`pnpm dev` is the whole stack — the database is hosted, so there is no second service to start.
+
+**Never run `pnpm build` while `pnpm dev` is running.** Both write to `.next`, and the production output is not something the dev server can serve: it dies with `ENOENT ... .next/server/pages/_document.js`. Stop dev first, or keep them apart:
+
+```bash
+pnpm exec next build --distDir .next-build
+```
+
+If it has already happened, `rm -rf .next` and restart. Check that port 3000 is actually free before restarting — a killed wrapper can leave the node process holding it, and the dev server will quietly move to 3001, which breaks OAuth because the callback URL is registered for 3000.
+
+## Database
+
+`pnpm db:push` is a dev convenience and needs an interactive terminal for its confirmation prompt. Production schema changes go through a committed migration:
+
+```bash
+pnpm db:generate          # after editing schema.ts
+pnpm exec drizzle-kit migrate
+```
+
+Dev and production are separate Neon branches. `.env.local` points at the dev branch, and should never hold the production connection string — `db:push` drops columns to make the database match the schema.
+
 ## Package manager
 
 pnpm. Not npm, not yarn. Setup instructions in the README and CONTRIBUTING use `pnpm`.
