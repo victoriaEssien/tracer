@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { currentUserId } from "@/auth";
+import { BackLink } from "@/components/back-link";
+import { IssueBody } from "@/components/opportunity/issue-body";
 import { isAiEnabled } from "@/config/env";
 import { OpportunityActions } from "@/components/opportunity/actions";
 import { AiPanel } from "@/components/opportunity/ai-panel";
@@ -33,9 +34,7 @@ export default async function OpportunityPage({
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-10">
-      <Link href="/feed" className="text-xs text-ink-faint transition hover:text-ink">
-        ← Back to feed
-      </Link>
+      <BackLink />
 
       <header className="mt-4 mb-6">
         <h1 className="text-2xl leading-snug font-semibold tracking-tight text-balance">
@@ -71,7 +70,13 @@ export default async function OpportunityPage({
       <div className="space-y-4">
         <VerdictPanel recommendation={recommendation} />
 
-        <ScoreBreakdown breakdown={recommendation.breakdown} />
+        <ScoreBreakdown
+          breakdown={recommendation.breakdown}
+          alreadyShown={[
+            ...recommendation.explanation.positives,
+            ...recommendation.explanation.concerns,
+          ]}
+        />
 
         <StartingPointsPanel
           startingPoints={recommendation.analysis.startingPoints}
@@ -87,7 +92,7 @@ export default async function OpportunityPage({
             The issue
           </SectionHeading>
           {issue.body ? (
-            <div className="issue-body">{truncate(issue.body, 4000)}</div>
+            <IssueBody markdown={truncate(issue.body, 6000)} />
           ) : (
             <p className="text-sm text-ink-faint">
               This issue has a title and no description, which is itself the most useful thing to
