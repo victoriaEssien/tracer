@@ -123,14 +123,18 @@ export async function analyzePending(
   userId: string,
   profile: UserProfile,
   limit: number,
+  onScored: (analyzed: number, total: number) => void = () => {},
 ): Promise<number> {
   const pending = await queries.findUnanalyzedIssues(userId, limit);
   if (pending.length === 0) return 0;
 
   const weights = await personalWeights(userId);
 
+  let analyzed = 0;
   for (const row of pending) {
     await analyzeStored(userId, profile, row, weights);
+    analyzed += 1;
+    onScored(analyzed, pending.length);
   }
 
   return pending.length;

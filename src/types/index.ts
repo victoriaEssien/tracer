@@ -301,6 +301,24 @@ export interface AiInsights {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Discovery progress                                                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * What a discovery run reports while it works.
+ *
+ * A run takes a minute or two across three distinct phases, and a spinner that
+ * says nothing for ninety seconds reads as a hang. These events are streamed to
+ * the browser as newline-delimited JSON as each step completes.
+ */
+export type DiscoveryProgress =
+  | { phase: "searching"; queriesRun: number; queriesTotal: number; candidates: number }
+  | { phase: "collecting"; repositories: number; issues: number; issuesTarget: number }
+  | { phase: "scoring"; analyzed: number; total: number }
+  | { phase: "done"; scored: number; rateLimited: boolean }
+  | { phase: "error"; message: string };
+
+/* -------------------------------------------------------------------------- */
 /* Feed                                                                       */
 /* -------------------------------------------------------------------------- */
 

@@ -4,6 +4,7 @@ import { Inbox, Loader2, RefreshCw, SearchX } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { DiscoveryDock } from "@/components/feed/discovery-dock";
 import { OpportunityRow } from "@/components/feed/opportunity-row";
 import { Button, EmptyState, StatusMessage } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -16,19 +17,15 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "recommended", label: "Take it" },
   { value: "possible", label: "Worth a look" },
   { value: "not-recommended", label: "Skip" },
-  { value: "dismissed", label: "Not for me" },
+  { value: "dismissed", label: "Hidden" },
 ];
-
-/** A discovery run collects and scores repositories; it is not a quick call. */
-const DISCOVERY_TIMEOUT_MS = 240_000;
-const POLL_INTERVAL_MS = 4_000;
 
 export function FeedConsole({
   opportunities,
   discovering = false,
 }: {
   opportunities: OpportunitySummary[];
-  /** Set when arriving straight from onboarding, where a run is already going. */
+  /** Set when arriving straight from onboarding, where a first run is due. */
   discovering?: boolean;
 }) {
   const router = useRouter();
@@ -37,18 +34,23 @@ export function FeedConsole({
   const [undoable, setUndoable] = useState<OpportunitySummary | null>(null);
   const [dismissedList, setDismissedList] = useState<OpportunitySummary[] | null>(null);
   const [restoredCount, setRestoredCount] = useState(0);
-
   const [running, setRunning] = useState(discovering);
-  const [found, setFound] = useState<number | null>(null);
-  const [failed, setFailed] = useState<string | null>(null);
-  const startedAt = useRef<number>(discovering ? Date.now() : 0);
 
   const [cursor, setCursor] = useState(0);
-  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const rows = useRef<(HTMLDivElement | null)[]>([]);
 
-  const visible = opportunities
-    .filter((item) => !dismissed.includes(item.id))
-    .filter((item) => filter === "all" || item.verdict === filter);
+  const live = opportunities.filter((item) => !dismissed.includes(item.id));
+  const visible = live.filter((item) => filter === "all" || item.verdict === filter);
+
+  // Counts belong on the filters, where the choice is actually made.
+  const counts: Record<Filter, number | null> = {
+    all: live.length,
+    recommended: live.filter((item) => item.verdict === "recommended").length,
+    possible: live.filter((item) => item.verdict === "possible").length,
+    "not-recommended": live.filter((item) => item.verdict === "not-recommended").length,
+    // Only known once the hidden list has been fetched.
+    dismissed: dismissedList?.length ?? null,
+  };
 
   /**
    * Keyboard triage. The audience lives on keyboards and the job is getting
@@ -66,8 +68,8 @@ export function FeedConsole({
         event.preventDefault();
         setCursor((current) => {
           const next = Math.min(Math.max(current + delta, 0), Math.max(visible.length - 1, 0));
-          rowRefs.current[next]?.scrollIntoView({ block: "nearest" });
-          rowRefs.current[next]?.focus({ preventScroll: true });
+          rows.current[next]?.scrollIntoView({ block: "nearest" });
+          rows.current[next]?.focus({ preventScroll: true });
           return next;
         });
       };
@@ -82,71 +84,6 @@ export function FeedConsole({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [visible, cursor, filter, router]);
-
-  /**
-   * While a run is going, poll rather than block. The request itself can take
-   * over a minute, and a disabled button is not feedback.
-   */
-  useEffect(() => {
-    if (!running) return;
-
-    const timer = setInterval(async () => {
-      if (Date.now() - startedAt.current > DISCOVERY_TIMEOUT_MS) {
-        setRunning(false);
-        setFailed("That run took longer than expected. Anything it found has been saved.");
-        router.refresh();
-        return;
-      }
-      try {
-        const response = await fetch("/api/opportunities?limit=100", { cache: "no-store" });
-        if (!response.ok) return;
-        const body = (await response.json()) as { count: number };
-        if (body.count !== opportunities.length) {
-          setFound(body.count);
-          router.refresh();
-        }
-      } catch {
-        // A failed poll is not a failed run; the next tick tries again.
-      }
-    }, POLL_INTERVAL_MS);
-
-    return () => clearInterval(timer);
-  }, [running, opportunities.length, router]);
-
-  const findMore = useCallback(async () => {
-    setFailed(null);
-    setFound(null);
-    setRunning(true);
-    startedAt.current = Date.now();
-
-    try {
-      const response = await fetch("/api/jobs/discovery", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ maxIssues: 30 }),
-        signal: AbortSignal.timeout(DISCOVERY_TIMEOUT_MS),
-      });
-
-      if (!response.ok) {
-        setFailed(
-          response.status === 503
-            ? "GitHub has run out of requests for now. Try again in a few minutes."
-            : "That search failed. Nothing was lost, so try again.",
-        );
-      } else {
-        const result = (await response.json()) as { issuesAnalyzed: number; rateLimited: boolean };
-        setFound(result.issuesAnalyzed);
-        if (result.rateLimited) {
-          setFailed("GitHub cut the search short on rate limits, so this is a partial result.");
-        }
-      }
-    } catch {
-      setFailed("That search did not finish. Try again in a moment.");
-    } finally {
-      setRunning(false);
-      router.refresh();
-    }
-  }, [router]);
 
   const loadDismissed = useCallback(async () => {
     const response = await fetch("/api/opportunities?dismissed=1", { cache: "no-store" });
@@ -169,7 +106,7 @@ export function FeedConsole({
 
   return (
     <div>
-      <div className="sticky top-0 z-10 -mx-3 mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line bg-canvas/92 px-3 py-2.5 backdrop-blur-sm sm:-mx-4 sm:px-4">
+      <div className="sticky top-13 z-10 -mx-3 mb-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line bg-canvas/92 px-3 py-2.5 backdrop-blur-sm sm:-mx-4 sm:px-4">
         <div role="group" aria-label="Filter by verdict" className="flex flex-wrap gap-0.5">
           {FILTERS.map((option) => (
             <button
@@ -185,11 +122,16 @@ export function FeedConsole({
               )}
             >
               {option.label}
+              {counts[option.value] !== null ? (
+                <span className="ml-1.5 font-mono text-[0.68rem] tabular-nums opacity-70">
+                  {counts[option.value]}
+                </span>
+              ) : null}
             </button>
           ))}
         </div>
 
-        <Button onClick={findMore} disabled={running} size="sm">
+        <Button onClick={() => setRunning(true)} disabled={running} size="sm">
           {running ? (
             <Loader2 size={12} strokeWidth={2} aria-hidden className="animate-spin" />
           ) : (
@@ -199,29 +141,17 @@ export function FeedConsole({
         </Button>
       </div>
 
-      {running ? (
-        <div className="border-b border-line px-3 py-3 sm:px-4">
-          <StatusMessage className="text-sm text-ink">
-            Searching GitHub and scoring what it finds.
-          </StatusMessage>
-          <p className="mt-0.5 text-xs text-ink-faint">
-            This takes a minute or two. Results appear as they land
-            {found !== null ? `, ${found} so far` : ""}.
-          </p>
-        </div>
-      ) : null}
-
-      {failed ? (
-        <div className="border-b border-line px-3 py-3 sm:px-4">
-          <StatusMessage tone="bad">{failed}</StatusMessage>
-        </div>
-      ) : null}
+      <DiscoveryDock
+        running={running}
+        onFinished={() => {
+          setRunning(false);
+          router.refresh();
+        }}
+      />
 
       {undoable ? (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-raised px-3 py-2.5 sm:px-4">
-          <StatusMessage className="text-sm text-ink">
-            Hidden: {undoable.title}
-          </StatusMessage>
+          <StatusMessage className="text-sm text-ink">Hidden: {undoable.title}</StatusMessage>
           <div className="flex gap-1.5">
             <Button size="sm" onClick={undo}>
               Put it back
@@ -254,14 +184,14 @@ export function FeedConsole({
             }
             action={
               !running && opportunities.length === 0 ? (
-                <Button variant="primary" onClick={findMore}>
+                <Button variant="primary" onClick={() => setRunning(true)}>
                   Find opportunities
                 </Button>
               ) : null
             }
           >
             {running
-              ? "The first run searches GitHub, collects each repository, and scores every issue against your profile."
+              ? "Searching GitHub, reading each project, and scoring every issue against your profile."
               : opportunities.length === 0
                 ? "Tracer searches GitHub for issues matching your profile, then scores each one against what you know and the time you have."
                 : "Widen the filter. A “worth a look” with a clear issue often beats a “take it” you have to wait on."}
@@ -274,7 +204,7 @@ export function FeedConsole({
               <li key={opportunity.id}>
                 <OpportunityRow
                   ref={(node) => {
-                    rowRefs.current[index] = node;
+                    rows.current[index] = node;
                   }}
                   opportunity={opportunity}
                   index={index}

@@ -80,14 +80,8 @@ export function OnboardingForm({ profile }: { profile: UserProfile | null }) {
       return;
     }
 
-    // Deliberately not awaited: a run takes a minute or two, and the queue
-    // reports progress on `?discovering=1` rather than holding the form open.
-    void fetch("/api/jobs/discovery", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ maxIssues: 30 }),
-    }).catch(() => null);
-
+    // The queue starts and owns the first run, so progress has one reporter and
+    // leaving this page cannot orphan a request nobody is listening to.
     router.push(firstRun ? "/feed?discovering=1" : "/feed");
     router.refresh();
   }
