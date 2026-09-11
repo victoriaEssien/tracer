@@ -79,7 +79,7 @@ export function ChipPicker({
                   : "border-line bg-surface text-ink-soft hover:border-ink-faint hover:text-ink",
               )}
             >
-              {icons ? <TechIcon name={option} /> : null}
+              {icons ? <TechIcon name={option} brand={!active} /> : null}
               {option}
             </button>
           );

@@ -1,20 +1,35 @@
-import { TECH_ICON_PATHS } from "@/config/tech-icons";
+import type { CSSProperties } from "react";
+
+import { TECH_ICONS } from "@/config/tech-icons";
+import { cn } from "@/lib/utils";
 
 /**
- * A technology's brand mark, in whatever colour the text around it is.
+ * A technology's brand mark, in its own colour.
  *
- * Monochrome on purpose. The problem these solve is sixty pills that look
- * identical, and a shape is enough to fix that; sixty brand colours would
- * replace one kind of overwhelming with another, and colour in this interface
- * means a verdict.
+ * The colour is the point: sixty identical pills are hard to read, and a logo
+ * stripped of its colour gives up most of what makes it recognisable at a
+ * glance. Both values come pre-adjusted for the background they sit on, since
+ * several of these brands are black and would disappear on the dark canvas.
+ *
+ * On a selected chip the mark takes the chip's own colour instead. A selected
+ * chip is already filled with ink, which most brand colours cannot be read
+ * against, and by then it is the only chip of its kind that matters.
  *
  * Anything with no mark falls back to its first letter, so a row of chips keeps
  * its rhythm instead of showing a gap where an icon should be.
  */
-export function TechIcon({ name, size = 13 }: { name: string; size?: number }) {
-  const path = TECH_ICON_PATHS[name.toLowerCase()];
+export function TechIcon({
+  name,
+  size = 13,
+  brand = true,
+}: {
+  name: string;
+  size?: number;
+  brand?: boolean;
+}) {
+  const icon = TECH_ICONS[name.toLowerCase()];
 
-  if (!path) {
+  if (!icon) {
     return (
       <span
         aria-hidden
@@ -34,9 +49,14 @@ export function TechIcon({ name, size = 13 }: { name: string; size?: number }) {
       fill="currentColor"
       aria-hidden
       focusable="false"
-      className="shrink-0"
+      className={cn("shrink-0", brand && "text-(--tech-mark) dark:text-(--tech-mark-dark)")}
+      style={
+        brand
+          ? ({ "--tech-mark": icon.light, "--tech-mark-dark": icon.dark } as CSSProperties)
+          : undefined
+      }
     >
-      <path d={path} />
+      <path d={icon.path} />
     </svg>
   );
 }
