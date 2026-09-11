@@ -28,7 +28,7 @@ export default function PrivacyPage() {
             {[
               {
                 q: "From GitHub, when you sign in",
-                a: "Your GitHub user id, username, display name, email address and avatar URL, plus the OAuth access token that lets Tracer read public GitHub data as you. The token is stored so that requests count against your own rate limit rather than a shared one.",
+                a: "Your GitHub username, display name, email address and profile picture, plus the key GitHub gives Tracer to read public information on your behalf. That key is kept so your searches count against your own GitHub allowance instead of a shared one, which is what keeps the queue fast."
               },
               {
                 q: "What you tell Tracer about yourself",
@@ -36,11 +36,11 @@ export default function PrivacyPage() {
               },
               {
                 q: "What you do here",
-                a: "Which issues you save, hide and open, and the score and technologies attached to each of those actions. This is what lets Tracer adjust to you, and it is shown back to you on your profile page rather than kept hidden.",
+                a: "Which issues you save, hide and open, along with the score and the technologies attached to each one. This is what lets Tracer adjust to you, and you can see all of it on your profile page rather than it being kept from you.",
               },
               {
                 q: "Public GitHub data",
-                a: "Repositories and issues Tracer has collected and scored, cached so it does not have to ask GitHub the same question repeatedly. This is public information about other people's projects, not about you.",
+                a: "Projects and issues Tracer has already looked at and scored, kept for a while so it does not have to ask GitHub the same question over and over. This is public information about other people's projects, not about you.",
               },
             ].map((item) => (
               <div key={item.q}>
@@ -56,10 +56,10 @@ export default function PrivacyPage() {
         <Panel title="What is not">
           <ul className="space-y-2.5 text-sm leading-relaxed text-ink-soft lg:text-base">
             {[
-              "No analytics, no tracking pixels, no advertising identifiers, no third-party scripts.",
-              "No private repository data. The OAuth scope Tracer asks for covers your public profile and email address only.",
+              "No analytics, no tracking pixels, no advertising, and no scripts from anyone else.",
+              "Nothing from your private projects. The permission Tracer asks GitHub for covers your public profile and email address, and nothing else.",
               "Nothing is ever written to your GitHub account. Tracer does not comment, assign, fork or open pull requests on your behalf.",
-              "No cookies beyond the one that keeps you signed in.",
+              "No cookies beyond the single one that keeps you signed in.",
             ].map((item) => (
               <li key={item} className="flex gap-2.5">
                 <span aria-hidden className="text-ink-faint">
@@ -76,19 +76,19 @@ export default function PrivacyPage() {
             {[
               {
                 q: "GitHub",
-                a: "Authenticates you and provides every piece of repository and issue data Tracer analyses.",
+                a: "Signs you in, and provides every project and issue Tracer reads.",
               },
               {
                 q: "Neon",
-                a: "Hosts the PostgreSQL database where everything above is stored.",
+                a: "Stores everything listed above, on Tracer's behalf.",
               },
               {
                 q: "Vercel",
-                a: "Hosts and serves the application, and processes the requests your browser makes to it.",
+                a: "Runs the site itself and handles the pages your browser asks for.",
               },
               {
                 q: "OpenAI, only if the AI layer is switched on",
-                a: "When you press the button that asks for a reading of an issue, the text of that public issue and its repository details are sent to generate a summary. Your profile and your activity are not sent. The feature is off unless an operator enables it, and the product works fully without it.",
+                a: "Only when you press the button that asks for a reading of an issue. The text of that public issue and its project details are sent off to write the summary. Your profile and what you have been looking at are never sent. The feature is switched off unless whoever runs Tracer turns it on, and everything else works the same without it.",
               },
             ].map((item) => (
               <div key={item.q}>
@@ -103,21 +103,20 @@ export default function PrivacyPage() {
 
         <Panel title="Getting rid of it">
           <p className="text-sm leading-relaxed text-ink-soft lg:text-base">
-            You can revoke Tracer&apos;s access at any time from your GitHub settings, under Applications
-            and then Authorized OAuth Apps. That immediately stops Tracer reading anything as you.
+            You can cut off Tracer&apos;s access at any time from your GitHub settings, under
+            Applications. That stops it reading anything on your behalf straight away.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-ink-soft lg:text-base">
-            To have your account and everything attached to it deleted from the database, ask. All
-            of your rows are keyed to your user id and are removed together, including your profile,
-            skills, saved and hidden issues, and activity history.
+            To have your account and everything attached to it deleted, just ask. It all goes
+            together: your profile, your skills, your saved and hidden issues, and the record of
+            what you have looked at.
           </p>
         </Panel>
 
         <Panel title="Running your own">
           <p className="text-sm leading-relaxed text-ink-soft lg:text-base">
-            Tracer is MIT licensed and open source. If you would rather not hand your data to anyone
-            else at all, you can run it yourself against your own database and your own GitHub OAuth
-            app, and none of the above applies.
+            Tracer is open source and free to copy. If you would rather not hand anything to anyone
+            else at all, you can run your own private copy, and none of the above applies to it.
           </p>
         </Panel>
       </div>

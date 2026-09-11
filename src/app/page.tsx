@@ -56,19 +56,19 @@ const STEPS = [
 const FAQ = [
   {
     q: "Does it write anything to my GitHub account?",
-    a: "No. Tracer only reads public data. It never comments, never assigns, never forks, and never opens a pull request on your behalf. The OAuth scope covers your public profile and email address, nothing more.",
+    a: "No. Tracer only reads things that are already public. It never comments, never assigns, never forks, and never opens a pull request as you. The permission it asks GitHub for covers your public profile and email address, and nothing else.",
   },
   {
     q: "Does it need AI to work?",
-    a: "No. The scoring is deterministic and runs entirely on observed GitHub data. There is an optional AI layer that can summarise an issue if you press the button, and the product works fully with it switched off.",
+    a: "No. The scoring is worked out from what is actually on GitHub, and the same issue always gets the same score. There is an optional AI reading you can ask for on any issue, and everything else works exactly the same with it turned off.",
   },
   {
     q: "What does it cost?",
-    a: "Nothing. It is a free tool and the source is MIT licensed, so you can also run your own copy against your own database.",
+    a: "Nothing. It is free, and the code is open, so you can also run your own private copy if you would rather.",
   },
   {
     q: "How is the score calculated?",
-    a: "Eight weighted signals, published in docs/scoring.md in the repository. If you think the weights are wrong, the scoring model is a file you can open a pull request against.",
+    a: "Eight things are measured and weighted, and the whole method is written down in the open. If you think a weight is wrong, it is one file, and you can suggest a change to it.",
   },
 ];
 

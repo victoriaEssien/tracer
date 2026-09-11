@@ -23,8 +23,8 @@ export default function Error({
     <main className="mx-auto max-w-3xl px-4 py-24 sm:px-6">
       <h1 className="text-2xl font-semibold tracking-[-0.02em] sm:text-3xl">That did not load</h1>
       <p className="mt-3 max-w-lg text-sm leading-relaxed text-ink-soft">
-        Your queue, your saved issues and your profile are all stored server-side, so nothing is
-        lost. Try again.
+        Nothing you have saved is affected. Your queue, your saved issues and your profile are
+        all kept safely, so this is a bad page load rather than lost work. Try again.
       </p>
       {error.digest ? (
         <p className="mt-3 font-mono text-xs text-ink-faint">Reference {error.digest}</p>

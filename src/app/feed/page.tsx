@@ -22,17 +22,12 @@ export default async function FeedPage({
 
   const { discovering } = await searchParams;
   const opportunities = await getFeed(userId, { limit: 40 });
-  const worthTaking = opportunities.filter((item) => item.verdict === "recommended").length;
 
   return (
     <main id="main" className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <PageHeader
         title="Your queue"
-        lede={
-          opportunities.length === 0
-            ? "Issues scored against what you know and the time you have."
-            : `${opportunities.length} issues scored. ${worthTaking} worth taking. Ranked by fit, not by stars.`
-        }
+        lede="Open-source issues scored against your skills and the time you have, ranked by fit rather than by stars."
       />
       <FeedConsole opportunities={opportunities} discovering={discovering === "1"} />
     </main>

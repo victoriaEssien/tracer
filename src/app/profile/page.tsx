@@ -27,7 +27,7 @@ export default async function ProfilePage() {
     <main id="main" className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <PageHeader
         title="Profile"
-        lede={`Signed in as ${session?.user?.name ?? session?.user?.email ?? "your GitHub account"}. Change anything here and your queue is scored again.`}
+        lede={`What your queue is scored against: your skills, your time, and what Tracer has learned from the issues you keep. Signed in as ${session?.user?.name ?? session?.user?.email ?? "your GitHub account"}.`}
       />
 
       <div className="space-y-10">

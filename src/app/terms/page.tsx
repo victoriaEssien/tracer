@@ -20,17 +20,17 @@ export default function TermsPage() {
       <div className="mt-12 space-y-10">
         <Panel title="What Tracer is">
           <p className="text-sm leading-relaxed text-ink-soft lg:text-base">
-            A tool that reads public GitHub data and offers an opinion about which issues are worth
-            contributing to. It is provided free and as it is, with no guarantee that it will be
-            available, accurate, or maintained.
+            A tool that reads public information on GitHub and offers an opinion about which
+            issues are worth contributing to. It is free, and it comes as it is, with no promise
+            that it will always be available, always be right, or keep being looked after.
           </p>
         </Panel>
 
         <Panel title="The recommendations are estimates">
           <p className="text-sm leading-relaxed text-ink-soft lg:text-base">
-            Every score, difficulty, time range and verdict is an inference drawn from public data.
+            Every score, difficulty, time range and verdict is a guess drawn from what is public.
             They will sometimes be wrong. An issue Tracer calls free may have been taken in a
-            conversation it cannot see; a two hour estimate may turn into a weekend.
+            conversation it cannot see, and a two hour estimate can turn into a weekend.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-ink-soft lg:text-base">
             Treat them as a starting point for your own judgement, never as a promise. The reasoning
@@ -43,7 +43,7 @@ export default function TermsPage() {
             {[
               "Follow the rules of the projects you contribute to. Their contributing guides and codes of conduct are theirs, not Tracer's, and Tracer has no standing to waive them.",
               "Be decent to maintainers. They are volunteers, and a recommendation from a tool is not a claim on anybody's time.",
-              "Do not use Tracer to scrape GitHub, to automate contributions, or in a way that breaks GitHub's own terms.",
+              "Do not use Tracer to harvest GitHub in bulk, to automate contributions, or in any way that breaks GitHub's own rules.",
             ].map((item) => (
               <li key={item} className="flex gap-2.5">
                 <span aria-hidden className="text-ink-faint">
@@ -65,9 +65,9 @@ export default function TermsPage() {
 
         <Panel title="The software itself">
           <p className="text-sm leading-relaxed text-ink-soft lg:text-base">
-            Tracer&apos;s source is MIT licensed, and the licence governs the code. These terms cover
-            this hosted instance of it. You are free to run your own, and nothing here restricts
-            that.
+            Tracer&apos;s code is open, and its licence governs what you may do with the code.
+            These terms cover this particular running copy of it. You are free to run your own, and
+            nothing here stops you.
           </p>
         </Panel>
 

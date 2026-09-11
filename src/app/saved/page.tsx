@@ -22,7 +22,7 @@ export default async function SavedPage() {
     <main id="main" className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <PageHeader
         title="Saved"
-        lede="Re-checked regularly. If one gets closed, assigned or picked up while you were thinking, you find out here."
+        lede="Issues you kept for later. Tracer re-checks each one and tells you if it gets closed, assigned, or taken while you were thinking."
       />
 
       {moved.length > 0 ? (
