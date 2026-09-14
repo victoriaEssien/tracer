@@ -312,7 +312,9 @@ export interface AiInsights {
  * the browser as newline-delimited JSON as each step completes.
  */
 export type DiscoveryProgress =
-  | { phase: "searching"; queriesRun: number; queriesTotal: number; candidates: number }
+  // `queriesTotal` is absent until the first server event carries it: how
+  // many searches a profile produces is only known once they are built.
+  | { phase: "searching"; queriesRun: number; queriesTotal?: number; candidates: number }
   | { phase: "collecting"; repositories: number; issues: number; issuesTarget: number }
   | { phase: "scoring"; analyzed: number; total: number }
   | { phase: "done"; scored: number; rateLimited: boolean }

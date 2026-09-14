@@ -3,6 +3,7 @@
 import { Check, Search, TriangleAlert, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { describeProgress } from "@/components/feed/discovery-progress";
 import { Button } from "@/components/ui";
 import type { DiscoveryProgress } from "@/types";
 
@@ -38,7 +39,7 @@ export function DiscoveryDock({
 
   const run = useCallback(async () => {
     cancelled.current = false;
-    setProgress({ phase: "searching", queriesRun: 0, queriesTotal: 12, candidates: 0 });
+    setProgress({ phase: "searching", queriesRun: 0, candidates: 0 });
 
     const abort = new AbortController();
     controller.current = abort;
@@ -103,7 +104,7 @@ export function DiscoveryDock({
 
   if (!progress) return null;
 
-  const { label, detail, percent, partial } = describe(progress);
+  const { label, detail, percent, partial } = describeProgress(progress);
   const finished = progress.phase === "done" || progress.phase === "error";
 
   return (
@@ -162,52 +163,4 @@ export function DiscoveryDock({
       </div>
     </div>
   );
-}
-
-/**
- * Phases carry unequal weight: searching is quick, collecting a repository is
- * seven API calls, and scoring is local. The bar tracks the real wait rather
- * than counting steps evenly.
- */
-function describe(progress: DiscoveryProgress): {
-  label: string;
-  detail: string;
-  percent: number;
-  partial: boolean;
-} {
-  switch (progress.phase) {
-    case "searching":
-      return {
-        label: "Searching GitHub",
-        detail: `${progress.candidates} candidates from ${progress.queriesRun} of ${progress.queriesTotal} searches`,
-        percent: 4 + (progress.queriesRun / Math.max(progress.queriesTotal, 1)) * 16,
-        partial: false,
-      };
-    case "collecting":
-      return {
-        label: "Reading the projects",
-        detail: `${progress.repositories} projects, ${progress.issues} issues collected`,
-        percent: 20 + (progress.issues / Math.max(progress.issuesTarget, 1)) * 60,
-        partial: false,
-      };
-    case "scoring":
-      return {
-        label: "Scoring against your profile",
-        detail: `${progress.analyzed} of ${progress.total} issues`,
-        percent: 80 + (progress.analyzed / Math.max(progress.total, 1)) * 20,
-        partial: false,
-      };
-    case "done":
-      return {
-        label: progress.scored > 0 ? `${progress.scored} new issues scored` : "Nothing new found",
-        detail:
-          progress.scored > 0
-            ? "They are in your queue, ranked by fit."
-            : "Everything GitHub returned was already scored for you.",
-        percent: 100,
-        partial: progress.rateLimited,
-      };
-    case "error":
-      return { label: "Search stopped", detail: progress.message, percent: 100, partial: false };
-  }
 }
