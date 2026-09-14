@@ -64,3 +64,5 @@ If Tracer recommends something it should not have, or misses something obvious, 
 ## Code of conduct
 
 Be decent to other contributors. Assume good faith, keep review comments about the code, and accept that maintainers may decline a change without it being a judgement of your work.
+
+That is the short version. The full [Code of Conduct](CODE_OF_CONDUCT.md) applies to everyone taking part, and explains how to report a problem privately.

@@ -8,6 +8,31 @@ It is not a better GitHub search. Searching `good first issue` returns thousands
 
 > Stop searching. Start contributing.
 
+**[Try it at tracer.vessien.com](https://tracer.vessien.com)** — sign in with GitHub, fill in the profile, and the first discovery run starts on its own.
+
+## Screenshots
+
+**The queue.** Every issue scored against your profile and ranked by fit, with the verdict and the reasoning in the row itself.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/feed-dark.png">
+  <img alt="The Tracer queue, showing open-source issues ranked by Contribution Fit Score with a verdict and reasons on each row" src="docs/screenshots/feed.png">
+</picture>
+
+**The reasoning.** No score is shown without what produced it: every dimension, its weight, its sub-score, and the evidence behind it.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/deep-dive-dark.png">
+  <img alt="The deep dive for one issue, showing the verdict, the four summary facts, and the score broken down by dimension with the evidence for each" src="docs/screenshots/deep-dive.png">
+</picture>
+
+**The profile.** What you know, what you want to learn, and how much time you have. This is what everything is scored against.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/onboarding-dark.png">
+  <img alt="The onboarding screen, with languages, frameworks and tools shown as selectable chips" src="docs/screenshots/onboarding.png">
+</picture>
+
 ## Status
 
 The V1 scope from [`docs/spec.md`](docs/spec.md) section 21 is implemented: GitHub sign-in, a skill profile, discovery, repository and issue analysis, the Contribution Fit Score with its explanation, the feed, the deep dive, save and dismiss, the saved-opportunity refresh, and the optional AI layer.
@@ -30,7 +55,7 @@ What it has not had yet is real use. The scoring weights in [`src/config/scoring
 Requirements: Node.js 20 or newer, pnpm, and a PostgreSQL database.
 
 ```bash
-git clone <your-fork-url> tracer
+git clone https://github.com/victoriaEssien/tracer.git
 cd tracer
 pnpm install
 cp .env.example .env.local
@@ -119,6 +144,8 @@ On Vercel, both fit a `vercel.json` cron entry. Anything that can make an authen
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues labelled `good first issue` are a reasonable place to start.
+
+Everyone taking part is covered by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
