@@ -1,0 +1,49 @@
+name: CI
+
+# Pull requests are the gate: main deploys straight to production, so a check
+# that only ran after the merge would be telling you about a broken demo.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A new push supersedes the run in flight for the same branch.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Version comes from the packageManager field in package.json, so CI and
+      # this machine cannot drift apart.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The same four commands AGENTS.md asks for by hand, cheapest first, so a
+      # lint error does not wait behind a production build to tell you.
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+
+      # `next build` rather than `pnpm build`: the latter ends with
+      # scripts/migrate.mjs, and a migration script has no business running in
+      # CI even though its VERCEL_ENV guard would stop it.
+      #
+      # No secrets, and none needed: the database client falls back to a
+      # placeholder when DATABASE_URL is unset, so this passes on a pull request
+      # from a fork, where GitHub withholds them. Keep it that way.
+      - run: pnpm exec next build

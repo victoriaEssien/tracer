@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "license": "MIT",
+  "packageManager": "pnpm@12.3.4",
   "description": "Find open-source work worth doing. Tracer analyzes GitHub repositories and issues to tell you which contributions are actually a good fit for you.",
   "scripts": {
     "dev": "next dev",
