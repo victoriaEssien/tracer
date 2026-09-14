@@ -47,6 +47,82 @@ const VAGUE_PATTERNS = [
   /\bplease (?:fix|add|implement)\b/i,
 ];
 
+/**
+ * Headings a GitHub issue *form* produces, and what each one tells us.
+ *
+ * A form (`.github/ISSUE_TEMPLATE/*.yml`) renders a fixed set of headings, so a
+ * heading is a stronger signal than a phrase in prose: it means the field was
+ * actually asked for. It is only evidence that the question was *answered* if
+ * there is something underneath it.
+ */
+const SECTION_HEADINGS: { field: FormField; pattern: RegExp }[] = [
+  { field: "reproduction", pattern: /\b(?:steps?|how) to reproduce\b|\breproduction\b/i },
+  { field: "expected", pattern: /\bexpected\b|\bactual\b|\bcurrent behaviou?r\b/i },
+  {
+    field: "acceptance",
+    pattern: /\bacceptance criteria\b|\bdefinition of done\b|\btasks?\b|\brequirements?\b/i,
+  },
+  { field: "environment", pattern: /\benvironment\b|\bversions?\b|\bsystem info\b/i },
+];
+
+type FormField = "reproduction" | "expected" | "acceptance" | "environment";
+
+/** What GitHub writes under a form field somebody skipped. */
+const NO_ANSWER = /^(?:_no response_|n\/?a|none|-{1,3}|todo)$/i;
+
+const HEADING_LINE = /^\s{0,3}#{1,6}\s+(.+?)\s*$/;
+
+/**
+ * The form fields that were both asked for and answered, and the ones left
+ * blank. A heading with nothing under it reads as present to a prose match,
+ * which is exactly backwards: the maintainer asked, and nobody replied.
+ */
+export function formSections(body: string): { answered: Set<FormField>; blank: FormField[] } {
+  const answered = new Set<FormField>();
+  const blank: FormField[] = [];
+
+  let field: FormField | null = null;
+  let content: string[] = [];
+
+  const close = () => {
+    if (!field) return;
+    const text = content.join("\n").trim();
+    if (text.length > 0 && !NO_ANSWER.test(text)) answered.add(field);
+    else if (!blank.includes(field)) blank.push(field);
+  };
+
+  for (const line of body.split("\n")) {
+    const heading = HEADING_LINE.exec(line);
+    if (!heading) {
+      if (field) content.push(line);
+      continue;
+    }
+
+    close();
+    const title = heading[1];
+    field = SECTION_HEADINGS.find((entry) => entry.pattern.test(title))?.field ?? null;
+    content = [];
+  }
+  close();
+
+  return { answered, blank: blank.filter((item) => !answered.has(item)) };
+}
+
+/** The body with its heading lines removed, so prose matching cannot read one. */
+function withoutHeadings(body: string): string {
+  return body
+    .split("\n")
+    .filter((line) => !HEADING_LINE.test(line))
+    .join("\n");
+}
+
+const FIELD_NAMES: Record<FormField, string> = {
+  reproduction: "steps to reproduce",
+  expected: "the expected behaviour",
+  acceptance: "what counts as done",
+  environment: "the environment",
+};
+
 export function analyzeIssueClarity(issue: CollectedIssue): {
   clarity: Clarity;
   signal: Signal;
@@ -69,6 +145,12 @@ export function analyzeIssueClarity(issue: CollectedIssue): {
     };
   }
 
+  const { answered, blank } = formSections(body);
+  // Prose is the fallback for an issue filed without a template. It reads the
+  // body with headings stripped, so `### Steps to reproduce` with nothing under
+  // it cannot be mistaken for an answer.
+  const prose = withoutHeadings(body);
+
   let score = 0;
 
   // Length is a weak proxy, so it is capped early and never dominates.
@@ -79,19 +161,22 @@ export function analyzeIssueClarity(issue: CollectedIssue): {
     concerns.push("The description is two sentences");
   }
 
-  const hasReproduction = REPRODUCTION_PATTERNS.some((pattern) => pattern.test(body));
+  const hasReproduction =
+    answered.has("reproduction") || REPRODUCTION_PATTERNS.some((pattern) => pattern.test(prose));
   if (hasReproduction) {
     score += 0.18;
     reasons.push("It gives steps to reproduce");
   }
 
-  const hasExpected = EXPECTED_BEHAVIOUR_PATTERNS.some((pattern) => pattern.test(body));
+  const hasExpected =
+    answered.has("expected") || EXPECTED_BEHAVIOUR_PATTERNS.some((pattern) => pattern.test(prose));
   if (hasExpected) {
     score += 0.16;
     reasons.push("It says what should happen instead");
   }
 
-  const hasAcceptance = ACCEPTANCE_PATTERNS.some((pattern) => pattern.test(body));
+  const hasAcceptance =
+    answered.has("acceptance") || ACCEPTANCE_PATTERNS.some((pattern) => pattern.test(prose));
   if (hasAcceptance) {
     score += 0.16;
     reasons.push("It lists what counts as done");
@@ -109,8 +194,18 @@ export function analyzeIssueClarity(issue: CollectedIssue): {
     reasons.push("It points at specific files");
   }
 
-  if (ENVIRONMENT_PATTERNS.some((pattern) => pattern.test(body))) {
+  if (answered.has("environment") || ENVIRONMENT_PATTERNS.some((pattern) => pattern.test(prose))) {
     score += 0.04;
+  }
+
+  // Saying which field went unanswered is more use than a lower number.
+  if (blank.length > 0) {
+    score -= 0.06;
+    concerns.push(
+      blank.length === 1
+        ? `The template asked for ${FIELD_NAMES[blank[0]]} and got no answer`
+        : `${blank.length} sections of the template were left blank`,
+    );
   }
 
   const hasImage = /!\[[^\]]*\]\(/.test(body) || /<img\b/i.test(body);

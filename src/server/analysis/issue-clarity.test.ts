@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { analyzeIssueClarity } from "./issue-clarity";
+import { analyzeIssueClarity, formSections } from "./issue-clarity";
 import { buildComment, buildIssue } from "./fixtures";
 
 describe("analyzeIssueClarity", () => {
@@ -124,5 +124,150 @@ describe("analyzeIssueClarity", () => {
 
     expect(piledOn.signal.score).toBeGreaterThanOrEqual(0);
     expect(piledOn.signal.score).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("issue forms", () => {
+  const form = (repro: string, expected: string, criteria: string) =>
+    [
+      "### Steps to reproduce",
+      "",
+      repro,
+      "",
+      "### Expected behaviour",
+      "",
+      expected,
+      "",
+      "### Acceptance criteria",
+      "",
+      criteria,
+    ].join("\n");
+
+  it("reads a filled-in template as answering each question", () => {
+    const { signal } = analyzeIssueClarity(
+      buildIssue({
+        body: form(
+          "1. Open the editor.\n2. Paste a multi-line snippet.\n3. Press undo.",
+          "Undo should restore the whole paste, not one line of it.",
+          "- [ ] Undo restores the whole paste\n- [ ] A test covers the multi-line case",
+        ),
+      }),
+    );
+
+    expect(signal.reasons).toContain("It gives steps to reproduce");
+    expect(signal.reasons).toContain("It says what should happen instead");
+    expect(signal.reasons).toContain("It lists what counts as done");
+  });
+
+  it("does not count a heading that nobody answered", () => {
+    // GitHub writes this under a form field that was left blank.
+    const { signal } = analyzeIssueClarity(
+      buildIssue({
+        body: [
+          "### Steps to reproduce",
+          "",
+          "_No response_",
+          "",
+          "### Expected behaviour",
+          "",
+          "_No response_",
+          "",
+          "### What happened",
+          "",
+          "The editor loses my work when I undo a paste, which is hard to recover from.",
+        ].join("\n"),
+      }),
+    );
+
+    expect(signal.reasons).not.toContain("It gives steps to reproduce");
+    expect(signal.reasons).not.toContain("It says what should happen instead");
+    expect(signal.concerns).toContain("2 sections of the template were left blank");
+  });
+
+  it("names the one section that went unanswered", () => {
+    const { signal } = analyzeIssueClarity(
+      buildIssue({
+        body: [
+          "### Steps to reproduce",
+          "",
+          "1. Open the editor.\n2. Paste a snippet.\n3. Press undo.",
+          "",
+          "### Expected behaviour",
+          "",
+          "_No response_",
+        ].join("\n"),
+      }),
+    );
+
+    expect(signal.concerns).toContain("The template asked for the expected behaviour and got no answer");
+  });
+
+  it("scores a filled template above the same template left blank", () => {
+    const filled = analyzeIssueClarity(
+      buildIssue({
+        body: form(
+          "1. Open the editor.\n2. Paste a multi-line snippet.\n3. Press undo.",
+          "Undo should restore the whole paste.",
+          "- [ ] Undo restores the whole paste",
+        ),
+      }),
+    );
+    const blank = analyzeIssueClarity(
+      buildIssue({ body: form("_No response_", "_No response_", "_No response_") }),
+    );
+
+    expect(filled.signal.score).toBeGreaterThan(blank.signal.score);
+  });
+
+  it("still reads an issue written as prose, with no template at all", () => {
+    const { signal } = analyzeIssueClarity(
+      buildIssue({
+        body:
+          "Steps to reproduce: open the editor, paste a multi-line snippet, then press undo. " +
+          "Expected behaviour is that the whole paste is restored, but only one line comes back.",
+      }),
+    );
+
+    expect(signal.reasons).toContain("It gives steps to reproduce");
+    expect(signal.reasons).toContain("It says what should happen instead");
+  });
+});
+
+describe("formSections", () => {
+  it("separates answered sections from blank ones", () => {
+    const { answered, blank } = formSections(
+      [
+        "### Steps to reproduce",
+        "Open it and press undo.",
+        "### Environment",
+        "_No response_",
+      ].join("\n"),
+    );
+
+    expect([...answered]).toEqual(["reproduction"]);
+    expect(blank).toEqual(["environment"]);
+  });
+
+  it.each(["_No response_", "N/A", "none", "---", "TODO", "   "])(
+    "treats %j as no answer",
+    (filler) => {
+      expect(formSections(`### Expected behaviour\n${filler}`).blank).toEqual(["expected"]);
+    },
+  );
+
+  it("ignores headings that are not form fields", () => {
+    const { answered, blank } = formSections("## Background\nSome context.\n## Notes\nMore.");
+
+    expect([...answered]).toEqual([]);
+    expect(blank).toEqual([]);
+  });
+
+  it("does not report a field as blank when it is answered elsewhere", () => {
+    const { answered, blank } = formSections(
+      "### Expected behaviour\n_No response_\n### Expected result\nIt should not crash.",
+    );
+
+    expect([...answered]).toEqual(["expected"]);
+    expect(blank).toEqual([]);
   });
 });
