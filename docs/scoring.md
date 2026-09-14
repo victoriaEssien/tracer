@@ -49,3 +49,9 @@ This starts as simple rules that nudge weights per user. Machine learning is exp
 ## Evaluating the model
 
 The metric that matters is not how many repositories are indexed. It is how often a recommendation leads to someone actually attempting a contribution. Changes to weights should be justified against that, not against how plausible the numbers look.
+
+## Adding a dimension
+
+[`adding-a-dimension.md`](adding-a-dimension.md) walks through the change file by
+file, including the two steps TypeScript cannot check: keeping the weights
+summing to 1, and keeping this document honest about what is actually applied.

@@ -30,6 +30,7 @@ See the README for what goes in `.env.local`. You need a GitHub OAuth app of you
 - `src/server/github/` talks to GitHub. Nothing else does.
 - `src/server/analysis/` reads collected data and produces signals. It must not call GitHub directly.
 - `src/server/recommendation/` turns signals into a score, an explanation, and a verdict. Scoring weights belong in `src/config/`, not inline.
+  Adding a new scoring dimension is walked through in [docs/adding-a-dimension.md](docs/adding-a-dimension.md).
 - `src/server/ai/` is the only place that talks to an AI provider, and it sits behind an interface so a provider can be swapped.
 - `src/app/api/` route handlers stay thin. Logic lives in `src/server/`.
 - `src/server/db/` holds the schema and every query. Changing the schema means regenerating a migration with `pnpm db:generate` and committing it.
