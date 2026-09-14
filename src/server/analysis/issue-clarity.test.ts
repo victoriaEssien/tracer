@@ -271,3 +271,57 @@ describe("formSections", () => {
     expect(blank).toEqual([]);
   });
 });
+
+describe("issues that are not in English", () => {
+  const spanish = [
+    "El importador descarta la última fila de un CSV cuando el archivo no termina",
+    "con un salto de línea, así que el recuento siempre queda corto por uno.",
+    "",
+    "Pasos para reproducir: abrir un archivo sin salto de línea final y contar las filas.",
+  ].join("\n");
+
+  it("does not score a well-written Spanish issue as unclear", () => {
+    const { clarity, signal } = analyzeIssueClarity(buildIssue({ body: spanish }));
+
+    // Clarity is one of VERDICT_GUARDS.cappedByWeakness, so a low score here
+    // would cap the verdict at "possible" for the whole non-English world.
+    expect(clarity).not.toBe("low");
+    expect(signal.score).toBeGreaterThan(0.35);
+  });
+
+  it("says it did not judge, rather than implying the issue is thin", () => {
+    const { signal } = analyzeIssueClarity(buildIssue({ body: spanish }));
+
+    expect(signal.confidence).toBe("low");
+    expect(signal.concerns).toEqual([
+      "Tracer only reads English well enough to judge an issue, so it did not judge this one",
+    ]);
+    // Nothing is claimed in its favour either: neutral, not rewarded.
+    expect(signal.reasons).toEqual([]);
+  });
+
+  it("still reports an empty body as empty, whatever language it is not in", () => {
+    expect(analyzeIssueClarity(buildIssue({ body: "" })).signal.score).toBeCloseTo(0.08);
+  });
+
+  it("scores a clear English issue above one it could not read", () => {
+    const english = analyzeIssueClarity(
+      buildIssue({
+        body: [
+          "### Steps to reproduce",
+          "",
+          "1. Open a CSV with no trailing newline.",
+          "2. Count the rows.",
+          "",
+          "### Expected behaviour",
+          "",
+          "The last row should be included.",
+        ].join("\n"),
+      }),
+    );
+    const unread = analyzeIssueClarity(buildIssue({ body: spanish }));
+
+    // The guard stops the penalty; it does not make unreadable the best case.
+    expect(english.signal.score).toBeGreaterThan(unread.signal.score);
+  });
+});

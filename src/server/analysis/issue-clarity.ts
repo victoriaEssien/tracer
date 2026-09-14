@@ -7,6 +7,8 @@
  */
 
 import { clamp } from "@/lib/utils";
+
+import { looksEnglish } from "./language";
 import type { Clarity, CollectedIssue, Signal } from "@/types";
 
 const MAINTAINER_ASSOCIATIONS = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
@@ -150,6 +152,24 @@ export function analyzeIssueClarity(issue: CollectedIssue): {
   // body with headings stripped, so `### Steps to reproduce` with nothing under
   // it cannot be mistaken for an answer.
   const prose = withoutHeadings(body);
+
+  // Every pattern below is an English regex. Scoring an issue we cannot read
+  // as "unclear" is a judgement of the reader, not the issue — and because
+  // clarity caps a verdict, it quietly argued against contributing to projects
+  // that do not work in English. Say so instead, at low confidence.
+  if (!looksEnglish(body)) {
+    return {
+      clarity: "medium",
+      // Just above VERDICT_GUARDS.weakDimensionScore, so it stops vetoing a
+      // verdict without outscoring an English issue that was actually read.
+      signal: {
+        score: 0.4,
+        confidence: "low",
+        reasons: [],
+        concerns: ["Tracer only reads English well enough to judge an issue, so it did not judge this one"],
+      },
+    };
+  }
 
   let score = 0;
 
