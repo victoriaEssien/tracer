@@ -19,8 +19,16 @@ export const BEGINNER_LABELS = [
   "starter",
   "low hanging fruit",
   "e-easy",
+  "d-easy",
   "difficulty: easy",
+  "difficulty: starter",
+  "good first bug",
+  "easyfix",
+  "easy-fix",
+  "newcomer",
+  // Both spacings, because matching is exact and maintainers write `Level:Starter`.
   "level: starter",
+  "level:starter",
 ];
 
 /** Labels that mean the maintainers want outside help. */
@@ -67,8 +75,22 @@ export const BLOCKED_LABELS = [
   "discussion",
 ];
 
-/** Labels that say somebody already has this. */
-export const CLAIMED_LABELS = ["assigned", "in progress", "in-progress", "wip", "claimed"];
+/**
+ * Labels that say somebody already has this.
+ *
+ * Matched against a label's separate words as well as the whole string, because
+ * this is the one vocabulary that turns up as a suffix on another label:
+ * `good first issue (taken)` is an invitation that has already been accepted,
+ * and reading it as an open invitation is the expensive mistake.
+ */
+export const CLAIMED_LABELS = [
+  "assigned",
+  "in progress",
+  "in-progress",
+  "wip",
+  "claimed",
+  "taken",
+];
 
 /**
  * Maps a label to the kind of contribution it implies.
@@ -139,7 +161,8 @@ export function hasBlockedLabel(labels: string[]): boolean {
 }
 
 export function hasClaimedLabel(labels: string[]): boolean {
-  return has(labels, CLAIMED_LABELS);
+  const forms = new Set(labels.flatMap(labelForms));
+  return CLAIMED_LABELS.some((word) => forms.has(word));
 }
 
 /**

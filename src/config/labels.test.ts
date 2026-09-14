@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   contributionTypesFromLabels,
   hasBeginnerLabel,
+  hasClaimedLabel,
   hasHelpWantedLabel,
   labelForms,
 } from "./labels";
@@ -86,6 +87,13 @@ describe("the beginner and help-wanted vocabularies", () => {
     "first-timers-only",
     "beginner friendly",
     "E-easy",
+    // Spellings found in the wild that the vocabulary used to miss.
+    "good first bug",
+    "easyfix",
+    "easy-fix",
+    "newcomer",
+    "Difficulty: starter",
+    "Level:Starter",
   ])("recognises %j as a beginner label", (name) => {
     expect(hasBeginnerLabel([name])).toBe(true);
   });
@@ -102,7 +110,20 @@ describe("the beginner and help-wanted vocabularies", () => {
     expect(hasHelpWantedLabel(["enhancement"])).toBe(false);
   });
 
-  it("does not read a beginner label that says it is taken as available", () => {
+  it("reads a beginner label that says it is taken as taken, not as available", () => {
     expect(hasBeginnerLabel(["good first issue (taken)"])).toBe(false);
+    expect(hasClaimedLabel(["good first issue (taken)"])).toBe(true);
+  });
+
+  it.each(["assigned", "WIP", "in-progress", "in progress", "claimed"])(
+    "recognises %j as claimed",
+    (name) => {
+      expect(hasClaimedLabel([name])).toBe(true);
+    },
+  );
+
+  it("does not read an unassigned label as claimed", () => {
+    expect(hasClaimedLabel(["unassigned"])).toBe(false);
+    expect(hasClaimedLabel(["good first issue"])).toBe(false);
   });
 });
