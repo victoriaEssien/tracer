@@ -21,6 +21,10 @@ const LARGE_PATTERNS = [
   /\bbreaking change\b/i,
   /\bnew subsystem\b/i,
   /\bend[- ]to[- ]end\b/i,
+  /\bre[- ]?architect(?:ure|ing)?\b/i,
+  /\bsplit (?:the |this )?(?:package|module|crate|library)\b/i,
+  /\bextract (?:it |this )?into a (?:new )?(?:package|module|crate|service)\b/i,
+  /\bmonorepo\b/i,
 ];
 
 /** Words that describe contained work. */
@@ -33,6 +37,13 @@ const SMALL_PATTERNS = [
   /\bsmall (?:fix|change|tweak)\b/i,
   /\bupdate the (?:docs|readme|documentation)\b/i,
   /\bmissing (?:import|semicolon|type|doc)\b/i,
+  // Narrow on purpose. A bare /\bupdate\b/ would match half of GitHub, and a
+  // wrong "this is small" costs more than a missing one.
+  /\bbump (?:the )?(?:version|dependency|dependencies)\b/i,
+  /\badd a changeset\b/i,
+  /\bflaky test\b/i,
+  /\b(?:improve|fix|reword) the error message\b/i,
+  /\bthe error message should\b/i,
 ];
 
 /** Rough hour ranges per scope. Wide on purpose. */
