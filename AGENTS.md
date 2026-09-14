@@ -32,11 +32,9 @@ pnpm typecheck
 
 `pnpm dev` is the whole stack — the database is hosted, so there is no second service to start.
 
-**Never run `pnpm build` while `pnpm dev` is running.** Both write to `.next`, and the production output is not something the dev server can serve: it dies with `ENOENT ... .next/server/pages/_document.js`. Stop dev first, or keep them apart:
+**Never run `pnpm build` while `pnpm dev` is running.** Both write to `.next`, and the production output is not something the dev server can serve: it dies with `ENOENT ... .next/server/pages/_document.js`.
 
-```bash
-pnpm exec next build --distDir .next-build
-```
+Stop dev first. There is no longer a way to keep the two apart from the command line: Next 15 removed the `--distDir` flag, and `next build --distDir .next-build` now fails with `error: unknown option '--distDir'`. The only way left to move the output is the `distDir` key in `next.config.ts`, which is committed and changes it for everyone, so stopping dev is the cheaper answer.
 
 If it has already happened, `rm -rf .next` and restart. Check that port 3000 is actually free before restarting — a killed wrapper can leave the node process holding it, and the dev server will quietly move to 3001, which breaks OAuth because the callback URL is registered for 3000.
 
