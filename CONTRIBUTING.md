@@ -34,6 +34,11 @@ See the README for what goes in `.env.local`. You need a GitHub OAuth app of you
 - `src/app/api/` route handlers stay thin. Logic lives in `src/server/`.
 - `src/server/db/` holds the schema and every query. Changing the schema means regenerating a migration with `pnpm db:generate` and committing it.
 
+The modules in `src/server/analysis/` are pure functions over collected data, with no network
+and no database, which makes them the easiest thing in the project to test. `pnpm test` runs
+the suite; `src/server/analysis/fixtures.ts` has builders so a test does not have to hand-roll
+a whole `CollectedIssue` to change one field.
+
 Keeping these boundaries is the main architectural constraint in the project. A pull request that moves GitHub calls into the analysis engine, or hardcodes weights into the scorer, will get review comments about it.
 
 ## Product constraints on new features
@@ -47,7 +52,7 @@ Two rules apply to anything user-facing:
 
 - Branch from `main`.
 - Keep the change focused. One concern per pull request.
-- Run `pnpm lint` and `pnpm typecheck` before pushing.
+- Run `pnpm lint`, `pnpm typecheck` and `pnpm test` before pushing.
 - Describe what changed and why. Link the issue.
 - Screenshots or short recordings help for anything visual.
 

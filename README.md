@@ -85,6 +85,8 @@ pnpm build        # production build
 pnpm start        # serve the production build
 pnpm lint         # eslint
 pnpm typecheck    # tsc --noEmit
+pnpm test         # vitest, once
+pnpm test:watch   # vitest, watching
 pnpm db:push      # sync the schema to the database
 pnpm db:generate  # generate a SQL migration from the schema
 pnpm db:studio    # browse the database
