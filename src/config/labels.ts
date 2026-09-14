@@ -19,7 +19,6 @@ export const BEGINNER_LABELS = [
   "starter",
   "low hanging fruit",
   "e-easy",
-  "d-easy",
   "difficulty: easy",
   "difficulty: starter",
   "good first bug",
@@ -140,31 +139,6 @@ export const DISCOVERY_ISSUE_LABELS = [
   "enhancement",
 ];
 
-function has(labels: string[], vocabulary: string[]): boolean {
-  return labels.some((label) => vocabulary.includes(label.trim().toLowerCase()));
-}
-
-export function hasBeginnerLabel(labels: string[]): boolean {
-  return has(labels, BEGINNER_LABELS);
-}
-
-export function hasHelpWantedLabel(labels: string[]): boolean {
-  return has(labels, HELP_WANTED_LABELS);
-}
-
-export function hasHardLabel(labels: string[]): boolean {
-  return has(labels, HARD_LABELS);
-}
-
-export function hasBlockedLabel(labels: string[]): boolean {
-  return has(labels, BLOCKED_LABELS);
-}
-
-export function hasClaimedLabel(labels: string[]): boolean {
-  const forms = new Set(labels.flatMap(labelForms));
-  return CLAIMED_LABELS.some((word) => forms.has(word));
-}
-
 /**
  * The forms one label can be matched against.
  *
@@ -196,6 +170,31 @@ export function labelForms(label: string): string[] {
   }
 
   return [...forms];
+}
+
+function has(labels: string[], vocabulary: string[]): boolean {
+  return labels.some((label) => vocabulary.includes(label.trim().toLowerCase()));
+}
+
+export function hasBeginnerLabel(labels: string[]): boolean {
+  return has(labels, BEGINNER_LABELS);
+}
+
+export function hasHelpWantedLabel(labels: string[]): boolean {
+  return has(labels, HELP_WANTED_LABELS);
+}
+
+export function hasHardLabel(labels: string[]): boolean {
+  return has(labels, HARD_LABELS);
+}
+
+export function hasBlockedLabel(labels: string[]): boolean {
+  return has(labels, BLOCKED_LABELS);
+}
+
+export function hasClaimedLabel(labels: string[]): boolean {
+  const forms = new Set(labels.flatMap(labelForms));
+  return CLAIMED_LABELS.some((word) => forms.has(word));
 }
 
 /** Which contribution types a set of labels points at. May be empty. */

@@ -7,9 +7,9 @@
  */
 
 import { clamp } from "@/lib/utils";
+import type { Clarity, CollectedIssue, Signal } from "@/types";
 
 import { looksEnglish } from "./language";
-import type { Clarity, CollectedIssue, Signal } from "@/types";
 
 const MAINTAINER_ASSOCIATIONS = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 
@@ -57,6 +57,8 @@ const VAGUE_PATTERNS = [
  * actually asked for. It is only evidence that the question was *answered* if
  * there is something underneath it.
  */
+type FormField = "reproduction" | "expected" | "acceptance" | "environment";
+
 const SECTION_HEADINGS: { field: FormField; pattern: RegExp }[] = [
   { field: "reproduction", pattern: /\b(?:steps?|how) to reproduce\b|\breproduction\b/i },
   { field: "expected", pattern: /\bexpected\b|\bactual\b|\bcurrent behaviou?r\b/i },
@@ -66,8 +68,6 @@ const SECTION_HEADINGS: { field: FormField; pattern: RegExp }[] = [
   },
   { field: "environment", pattern: /\benvironment\b|\bversions?\b|\bsystem info\b/i },
 ];
-
-type FormField = "reproduction" | "expected" | "acceptance" | "environment";
 
 /** What GitHub writes under a form field somebody skipped. */
 const NO_ANSWER = /^(?:_no response_|n\/?a|none|-{1,3}|todo)$/i;
@@ -147,29 +147,31 @@ export function analyzeIssueClarity(issue: CollectedIssue): {
     };
   }
 
+  // Every pattern below is an English regex. Scoring an issue we cannot read
+  // as "unclear" judges the reader, not the issue — and because clarity caps a
+  // verdict, it quietly argued against contributing to projects that do not
+  // work in English. Say so instead, at low confidence.
+  if (!looksEnglish(body)) {
+    return {
+      clarity: "medium",
+      signal: {
+        // Just above VERDICT_GUARDS.weakDimensionScore, so it stops vetoing a
+        // verdict without outscoring an English issue that was actually read.
+        score: 0.4,
+        confidence: "low",
+        reasons: [],
+        concerns: [
+          "Tracer only reads English well enough to judge an issue, so it did not judge this one",
+        ],
+      },
+    };
+  }
+
   const { answered, blank } = formSections(body);
   // Prose is the fallback for an issue filed without a template. It reads the
   // body with headings stripped, so `### Steps to reproduce` with nothing under
   // it cannot be mistaken for an answer.
   const prose = withoutHeadings(body);
-
-  // Every pattern below is an English regex. Scoring an issue we cannot read
-  // as "unclear" is a judgement of the reader, not the issue — and because
-  // clarity caps a verdict, it quietly argued against contributing to projects
-  // that do not work in English. Say so instead, at low confidence.
-  if (!looksEnglish(body)) {
-    return {
-      clarity: "medium",
-      // Just above VERDICT_GUARDS.weakDimensionScore, so it stops vetoing a
-      // verdict without outscoring an English issue that was actually read.
-      signal: {
-        score: 0.4,
-        confidence: "low",
-        reasons: [],
-        concerns: ["Tracer only reads English well enough to judge an issue, so it did not judge this one"],
-      },
-    };
-  }
 
   let score = 0;
 
