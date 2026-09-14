@@ -70,14 +70,43 @@ export const BLOCKED_LABELS = [
 /** Labels that say somebody already has this. */
 export const CLAIMED_LABELS = ["assigned", "in progress", "in-progress", "wip", "claimed"];
 
-/** Maps a label to the kind of contribution it implies. */
+/**
+ * Maps a label to the kind of contribution it implies.
+ *
+ * Matched exactly against the forms in `labelForms`, never by substring: `ui`
+ * as a substring matches `build`, and `doc` matches `docker`. Every variant
+ * worth catching is therefore spelled out here.
+ */
 export const CONTRIBUTION_TYPE_LABELS: Record<ContributionType, string[]> = {
-  features: ["feature", "enhancement", "feature request", "new feature", "improvement"],
-  "bug-fixes": ["bug", "defect", "fix", "regression", "crash", "error"],
+  features: ["feature", "features", "enhancement", "feature request", "new feature", "improvement"],
+  "bug-fixes": ["bug", "bugfix", "defect", "fix", "regression", "crash", "error"],
   "ui-ux": ["ui", "ux", "design", "css", "styling", "frontend", "a11y", "accessibility"],
-  documentation: ["documentation", "docs", "doc", "readme", "typo", "wording"],
+  documentation: [
+    "documentation",
+    "docs",
+    "doc",
+    "readme",
+    "typo",
+    "wording",
+    "guide",
+    "guides",
+    "tutorial",
+  ],
   tests: ["test", "tests", "testing", "coverage", "flaky"],
-  tooling: ["build", "ci", "tooling", "infrastructure", "chore", "dx", "developer experience"],
+  tooling: [
+    "build",
+    "ci",
+    "cd",
+    "tooling",
+    "infrastructure",
+    "chore",
+    "dx",
+    "developer experience",
+    "dependencies",
+    "deps",
+    "docker",
+    "packaging",
+  ],
 };
 
 /** Search filters used by the discovery job to find candidate issues. */
@@ -113,15 +142,45 @@ export function hasClaimedLabel(labels: string[]): boolean {
   return has(labels, CLAIMED_LABELS);
 }
 
+/**
+ * The forms one label can be matched against.
+ *
+ * Maintainers scope their labels, and the same meaning arrives as `docs`,
+ * `area/docs`, `type: docs` or `A-docs`. Rather than matching a substring —
+ * which classifies `build` as UI work, because it contains `ui` — each label is
+ * expanded into the whole string plus its separated words, and those are
+ * compared exactly.
+ */
+export function labelForms(label: string): string[] {
+  const normalized = label.trim().toLowerCase();
+  const forms = new Set<string>();
+
+  if (normalized) forms.add(normalized);
+
+  // `area/build`, `type: bug`, `kind/feature` — the part after the scope.
+  for (const separator of ["/", ":"]) {
+    const index = normalized.lastIndexOf(separator);
+    if (index !== -1) {
+      const tail = normalized.slice(index + 1).trim();
+      if (tail) forms.add(tail);
+    }
+  }
+
+  // Individual words, so `type-bug` and `area/build-packaging` still land.
+  // `+` and `#` survive the split, because `c++` and `c#` are technologies.
+  for (const word of normalized.split(/[^a-z0-9+#]+/)) {
+    if (word) forms.add(word);
+  }
+
+  return [...forms];
+}
+
 /** Which contribution types a set of labels points at. May be empty. */
 export function contributionTypesFromLabels(labels: string[]): ContributionType[] {
-  const normalized = labels.map((label) => label.trim().toLowerCase());
+  const forms = new Set(labels.flatMap(labelForms));
   const types: ContributionType[] = [];
   for (const [type, vocabulary] of Object.entries(CONTRIBUTION_TYPE_LABELS)) {
-    const matched = normalized.some((label) =>
-      vocabulary.some((word) => label === word || label.includes(word)),
-    );
-    if (matched) types.push(type as ContributionType);
+    if (vocabulary.some((word) => forms.has(word))) types.push(type as ContributionType);
   }
   return types;
 }
