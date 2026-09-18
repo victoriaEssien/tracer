@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { auth, signOut } from "@/auth";
 import { GitHubButton } from "@/components/github-button";
 import { Logo } from "@/components/logo";
 import { NavLink } from "@/components/nav-link";
+import { RepoStats } from "@/components/repo-stats";
 import { SiteNavMenu } from "@/components/site-nav-menu";
 import { Button } from "@/components/ui";
 
@@ -41,14 +43,22 @@ export async function SiteNav() {
         aria-label="Main"
         className="relative mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4 sm:px-8"
       >
-        <Link
-          href={session ? "/feed" : "/"}
-          className="flex items-center gap-2"
-          aria-label="Tracer home"
-        >
-          <Logo size={19} />
-          <span className="text-sm font-semibold tracking-tight lowercase">tracer</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={session ? "/feed" : "/"}
+            className="flex shrink-0 items-center gap-2"
+            aria-label="Tracer home"
+          >
+            <Logo size={19} />
+            <span className="text-base font-semibold tracking-tight lowercase">tracer</span>
+          </Link>
+
+          {/* Streamed, so a slow or rate-limited GitHub cannot hold up a header
+              that renders on every page. */}
+          <Suspense fallback={null}>
+            <RepoStats />
+          </Suspense>
+        </div>
 
         {session ? (
           <>

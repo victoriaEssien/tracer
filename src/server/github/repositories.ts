@@ -138,6 +138,27 @@ export async function collectRepository(
 }
 
 /**
+ * Star and fork counts for one repository.
+ *
+ * Separate from `collectRepository` because that spends seven requests to
+ * build an analysis, and this answers two numbers for a piece of chrome.
+ * Cached for six hours: neither needs to be to the minute.
+ */
+export async function collectRepoStats(
+  client: GitHubClient,
+  owner: string,
+  name: string,
+): Promise<{ stars: number; forks: number } | null> {
+  const repo = await client.rest<RestRepository>(`/repos/${owner}/${name}`, {
+    cacheSeconds: 21_600,
+    allowNotFound: true,
+  });
+  if (!repo) return null;
+
+  return { stars: repo.stargazers_count, forks: repo.forks_count };
+}
+
+/**
  * Top-level directory listing, used to suggest starting points. Returns an
  * empty list rather than failing — this is a nice-to-have, not a requirement.
  */

@@ -10,7 +10,7 @@ export function SiteFooter() {
     <footer className="mt-20 border-t border-line">
       <div className="mx-auto flex max-w-5xl flex-wrap items-start justify-between gap-x-8 gap-y-8 px-4 py-10 sm:px-8">
         <div>
-          <p className="flex items-center gap-2 text-sm font-semibold tracking-tight lowercase">
+          <p className="flex items-center gap-2 text-base font-semibold tracking-tight lowercase">
             <Logo size={17} />
             tracer
           </p>

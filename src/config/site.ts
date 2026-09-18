@@ -20,7 +20,9 @@ export const SITE_DESCRIPTION =
 
 export const SITE_TAGLINE = "Find open-source issues actually worth your time";
 
-export const REPOSITORY_URL = "https://github.com/victoriaEssien/tracer";
+export const REPOSITORY_OWNER = "victoriaEssien";
+export const REPOSITORY_NAME = "tracer";
+export const REPOSITORY_URL = `https://github.com/${REPOSITORY_OWNER}/${REPOSITORY_NAME}`;
 
 /** Ink and canvas, matching globals.css. Used by the generated images. */
 export const BRAND = {
